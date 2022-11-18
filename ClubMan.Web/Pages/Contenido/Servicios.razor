@@ -1,0 +1,180 @@
+@page "/servicios"
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="Servicio" Title="Servicios" IconName="IconName.PaperPlane" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd"  LoadDataAsync="() => ApiService.GetServicios(AppState.ClubKey)">
+    <Columns>
+        <GridColumn Width="60px" HeaderText="Orden" Field="@nameof(Servicio.Orden)" />
+        <GridColumn HeaderText="Título" Field="@nameof(Servicio.Titulo)"/>
+        <GridColumn HeaderText="Categoría" Field="@nameof(Servicio.Categoria)"/>
+        <GridColumn HeaderText="Horario" Field="@nameof(Servicio.Horario)"/>
+        <GridColumn Width="80px" HeaderText="Publicado" AllowFiltering="false" Field="@nameof(Servicio.Publicado)">
+            <Template>
+                @{
+                    var item = (context as Servicio);
+                    <Check Disabled="true" TValue="bool" @bind-Checked="@item.Publicado"/>
+                }
+            </Template>
+        </GridColumn>
+    </Columns>
+</ListContent>
+
+<Modal @ref="editDialog" Width="Width.Max100" Closed="async () => await editValidator.ClearAll()">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nuevo Servicio" : "Editando Servicio")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual" Model="_editRow" >
+                    <Fields>
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Orden</FieldLabel>
+                            <NumericEdit TValue="int" @bind-Value="_editRow.Orden"/>
+                        </Field>
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Publicado en App</FieldLabel>
+                            <Check TValue="bool" @bind-Checked="_editRow.Publicado"></Check>
+                        </Field>
+                        
+                    </Fields>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Titulo</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Titulo">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Categoría</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Categoria">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Horario</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Horario">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Fields>
+                    <Field>
+                        <FieldLabel ColumnSize="ColumnSize.Is6" TextColor="TextColor.Black50">Correo Contacto</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Email">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                    <Field>
+                        <FieldLabel ColumnSize="ColumnSize.Is6" TextColor="TextColor.Black50">Teléfono Contacto</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Telefono">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                    
+                </Fields>
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    
+    ListContent<Servicio> _dataGrid;
+    
+    private Modal editDialog;
+    private bool isCreating = false;
+    private bool _isBusy = false;
+    private Validations editValidator;    
+    private Servicio _editRow = new();
+    
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+    
+    private void DoRowClicked(Servicio obj)
+    {
+        isCreating = false;
+        _editRow = obj with {};
+        editDialog.Show();
+    }
+    
+    private void DoShowAdd()
+    {
+        isCreating = true;
+        _editRow = new Servicio();
+        editDialog.Show();
+    }
+    
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            await ApiService.UpsertServicio(AppState.ClubKey, _editRow);
+            await editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemoveServicio(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _dataGrid.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

@@ -1,0 +1,39 @@
+@if(Solicitud != null && Solicitud.ReferenciasBancarias.Any()) {
+<Container Margin="Margin.Is2">
+    @foreach (var dep in Solicitud.ReferenciasBancarias)
+    {
+        <Container Margin="Margin.Is4.FromTop" >
+            <Fields Margin="Margin.Is2.FromTop">
+                <Field Horizontal ColumnSize="ColumnSize.Is5">
+                    <FieldLabel ColumnSize="ColumnSize.Is4">Banco</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is8">
+                        <TextEdit ReadOnly="true" @bind-Text="dep.Banco"/>
+                    </FieldBody>
+                </Field>
+                <Field Horizontal ColumnSize="ColumnSize.Is4">
+                    <FieldLabel ColumnSize="ColumnSize.Is4">Oficial</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is8">
+                        <TextEdit ReadOnly="true" @bind-Text="dep.OficialCuenta"/>
+                    </FieldBody>
+                </Field>
+                <Field Horizontal ColumnSize="ColumnSize.Is3">
+                    <FieldLabel ColumnSize="ColumnSize.Is4">Cuenta</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is8">
+                        <TextEdit ReadOnly="true" @bind-Text="dep.NumeroDeCuenta"/>
+                    </FieldBody>
+                </Field>
+            </Fields>
+        </Container>
+    }
+</Container>
+}
+else
+{
+    <EmptyView/>
+}
+@code {
+
+    [Parameter]
+    public Solicitud Solicitud { get; set; }
+
+}

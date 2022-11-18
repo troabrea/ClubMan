@@ -1,0 +1,192 @@
+@using System.Runtime.CompilerServices
+@using Syncfusion.Blazor.Navigations
+@inject INotificationService NotificationService
+@typeparam TItem
+
+<MainContent Title="@Title" IconName="@IconName">
+    <ChildContent>
+        @if (_isLoading)
+        {
+            <Loading/>
+        }
+        else if(_data != null)
+        {
+            @if (_showGrid)
+            {
+                <SfGrid @ref="_grid" DataSource="_data"
+                        AdaptiveUIMode="AdaptiveMode.Both"
+                        AllowFiltering="true"
+                        AllowSorting="true"
+                        AllowMultiSorting="true"
+                        AllowGrouping="false"
+                        AllowExcelExport="true"
+                        AllowPdfExport="true"
+                        ShowColumnChooser="false"
+                        ShowColumnMenu="false"
+                        AllowPaging="true">
+                    <GridFilterSettings Type="FilterType.Excel"/>
+                    <GridSelectionSettings CheckboxOnly="true"></GridSelectionSettings>
+                    <GridPageSettings PageSize="10" PageSizes="_pageSize"/>
+                    @GridSetup
+                    <GridColumns>
+                        @Columns
+                    </GridColumns>
+                    <GridEvents TValue="TItem" OnRecordClick="OnRecordClick" OnToolbarClick="OnToolbarClicked"></GridEvents>
+                    <GridTemplates>
+                        <ToolbarTemplate>
+                            <ListToolPanel ToolbarItems="@ToolbarItems" FilterModel="FilterModel" OnAddRecord="OnAddButtonClicked" OnRefresh="LoadInitialData" OnExport="DoExport"/>
+                        </ToolbarTemplate>
+                    </GridTemplates>
+
+                </SfGrid>
+            }
+            else
+            {
+                <ListToolPanel ToolbarItems="@ToolbarItems" FilterModel="FilterModel" OnAddRecord="OnAddButtonClicked" OnRefresh="LoadInitialData" OnExport="DoExport"/>
+                @CustomTemplate
+            }
+        }
+    </ChildContent>
+</MainContent>
+
+@code {
+
+    private List<Object> _toolbaritems = new List<Object>() { "Add", "Edit", "Delete", "Update", "Cancel", new ItemModel() { Text = "Click", TooltipText = "Click", PrefixIcon = "e-click", Id = "Click" } };
+
+    object[] _pageSize = {10, 25, 50, 100, 200};
+    
+    List<TItem> _data;
+    SfGrid<TItem> _grid;
+    [Parameter] public string Title { get; set; }
+    [Parameter] public IconName IconName { get; set; }
+    [Parameter] public RenderFragment GridSetup { get; set; }
+    [Parameter] public RenderFragment Columns { get; set; }
+    [Parameter] public RenderFragment ToolbarItems { get; set; }
+    [Parameter] public RenderFragment CustomTemplate { get; set; }
+    [Parameter] public Func<Task<List<TItem>>> LoadDataAsync { get; set; }
+
+    [Parameter]
+    public FilterModel FilterModel { get; set; } = FilterModel.Empty();
+    
+    [Parameter]
+    public Action<TItem> OnRowClicked { get; set; }
+    [Parameter]
+    public System.Action OnAddButtonClicked { get; set; }
+    
+    
+    bool _isLoading = false;
+
+    private bool _showGrid = true;
+
+    public void ShowDataGrid()
+    {
+        _showGrid = true;
+        StateHasChanged();
+    }
+    public void ShowCustomTemplate()
+    {
+        _showGrid = false;
+        StateHasChanged();
+    }
+
+    public List<TItem> Data => _data != null ? _data : new List<TItem>();
+    
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            LoadInitialData();
+        }
+        return Task.CompletedTask;
+    }
+
+    private async void LoadInitialData()
+    {
+        if(_isLoading) return;
+        try
+        {
+            _isLoading = true;
+            StateHasChanged();
+            _data = await LoadDataAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        finally
+        {
+            _isLoading=false;
+            StateHasChanged();
+        }
+
+    }
+
+    public void ReloadData()
+    {
+        LoadInitialData();
+    }
+    
+    
+    private Task ExportDataAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    private Task DoSearch()
+    {
+        return Task.CompletedTask;
+    }
+
+    private Task OnToolbarClicked(ClickEventArgs arg)
+    {
+        if (arg.Item.Id == "add")
+        {
+            OnAddButtonClicked?.Invoke();
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task OnRecordClick(RecordClickEventArgs<TItem> arg)
+    {
+        if (OnRowClicked != null)
+        {
+            OnRowClicked.Invoke(arg.RowData);
+        }
+        return Task.CompletedTask;
+    }
+
+    private async void DoExport(ExportFormat format)
+    {
+        try
+        {
+            switch (format)
+            {
+                case ExportFormat.Excel:
+                    await _grid.ExportToExcelAsync();
+                    break;
+                case ExportFormat.CSV:
+                    await _grid.ExportToCsvAsync();
+                    break;
+                case ExportFormat.PDF:
+                    var  HeaderContent = new List<PdfHeaderFooterContent>
+                    {
+                        new PdfHeaderFooterContent() { Type = ContentType.Text, Value = $"{Title}", Position = new PdfPosition() { X = 0, Y = 50 }, Style = new PdfContentStyle() { TextBrushColor = "#000000", FontSize = 13 } }
+                    };
+                    await _grid.ExportToPdfAsync(new PdfExportProperties()
+                    {
+                        Header = new() { FromTop = 0, Height = 120, Contents = HeaderContent}
+                    });
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(format), format, null);
+            }
+        }
+        catch (Exception e)
+        {
+            await NotificationService.Error("Ha ocurrudo un error, favor reintentar", "Aceptar");
+            Console.WriteLine(e);
+        }
+
+    }
+
+}

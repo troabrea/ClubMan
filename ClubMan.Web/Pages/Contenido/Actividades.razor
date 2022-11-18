@@ -1,0 +1,261 @@
+@page "/Actividades"
+@using Syncfusion.Blazor.Schedule.Internal
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="ActividadViewModel" OnRowClicked="OnRowClicked" OnAddButtonClicked="OnAddButtonClicked" Title="Actividades" IconName="IconName.CalendarWeek" LoadDataAsync="() => ApiService.GetActividades(AppState.ClubKey)">
+    <Columns>
+        <GridColumn Width="250px" HeaderText="Foto" Field="Actividad.ImagenUrl">
+            <Template>
+                @{
+                    var item = (context as ActividadViewModel);
+                    <FigureImage  Style="height:175px" Rounded="true" Source="@item.Instalacion.ImagenUrl"></FigureImage>
+                }
+            </Template>
+        </GridColumn>
+        <GridColumn HeaderText="Área" Field="Instalacion.Titulo"/>
+        <GridColumn HeaderText="Título" Field="Actividad.Titulo"/>
+        <GridColumn HeaderText="Fecha y Hora" Field="Actividad.FechaHora">
+            <Template>
+                @{
+                    var item = (context as ActividadViewModel);
+                    <Label>@item.Actividad.FechaHora.ToString("dd-MMM-yyyy")</Label>
+                    <br/>
+                    <Label>@item.Actividad.FechaHora.ToString("hh:mm tt") - @item.Actividad.FechaHora.AddHours(item.Actividad.Horas).ToString("hh:mm tt")</Label>
+                }
+            </Template>
+        </GridColumn>
+        <GridColumn Width="90px" HeaderText="App" Field="Actividad.Publicado">
+            <Template>
+                @{
+                    var item = (context as ActividadViewModel);
+                    <Check TValue="bool" @bind-Checked="@item.Actividad.Publicado"/>
+                }
+            </Template>
+        </GridColumn>
+    </Columns>
+</ListContent>
+
+
+<Modal @ref="editDialog" Width="Width.Max100" Closed="async () => await editValidator.ClearAll()">
+    <ModalContent Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nueva Actividad" : "Editando Actividad")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual" Model="_editRow" >
+                
+                <Fields>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Fecha</FieldLabel>
+                        <FieldBody>
+                            <DatePicker TValue="DateTime"  @bind-Date="Fecha">
+                                <Feedback><ValidationError/></Feedback>
+                            </DatePicker>
+                        </FieldBody>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Hora</FieldLabel>
+                        <FieldBody>
+                            <TimePicker TValue="TimeSpan"  @bind-Time="Hora">
+                                <Feedback><ValidationError/></Feedback>
+                            </TimePicker>
+                        </FieldBody>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Duración</FieldLabel>
+                        <FieldBody>
+                            <NumericEdit TValue="Int32" @bind-Value="_editRow.Horas" Min="1" Max="12">
+                                <Feedback><ValidationError/></Feedback>
+                            </NumericEdit>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+                <Field>
+                    <FieldLabel ColumnSize="ColumnSize.Is12" TextColor="TextColor.Black50">Área</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is12">
+                        <SelectList TabIndex="1" TItem="InstalacionViewModel" TValue="Guid"
+                                    TextField="@((item) => item.Instalacion.Titulo)"
+                                    ValueField="@((item) => item.Instalacion.Id)"
+                                    Data="_instalaciones"
+                                    @bind-SelectedValue="_editRow.InstalacionId"
+                                    DefaultItemText="Seleccione Área"/>
+                    </FieldBody>
+                </Field>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Titulo</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Titulo">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Fields>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Email</FieldLabel>
+                            <FieldBody>
+                                <TextEdit @bind-Text="_editRow.Email">
+                                    <Feedback><ValidationError/></Feedback>
+                                </TextEdit>
+                            </FieldBody>
+                            <FieldHelp>Email para reservaciones</FieldHelp>
+                        </Field>
+                    </Validation>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Teléfono</FieldLabel>
+                            <FieldBody>
+                                <TextEdit @bind-Text="_editRow.Telefono">
+                                    <Feedback><ValidationError/></Feedback>
+                                </TextEdit>
+                            </FieldBody>
+                            <FieldHelp>Teléfono para reservaciones</FieldHelp>
+                        </Field>
+                    </Validation>
+                </Fields>
+                <Fields>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Imagen Url</FieldLabel>
+                            <FieldBody>
+                                <TextEdit @bind-Text="_editRow.ImagenUrl">
+                                    <Feedback><ValidationError/></Feedback>
+                                </TextEdit>
+                            </FieldBody>
+                        </Field>
+                    </Validation>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Detalles Url</FieldLabel>
+                            <FieldBody>
+                                <TextEdit @bind-Text="_editRow.DetalleUrl">
+                                    <Feedback><ValidationError/></Feedback>
+                                </TextEdit>
+                            </FieldBody>
+                        </Field>
+                    </Validation>
+                </Fields>
+                <Field>
+                    <FieldLabel ColumnSize="ColumnSize.Is4" TextColor="TextColor.Black50">Publicado</FieldLabel>
+                    <FieldBody>
+                        <Check TValue="bool" @bind-Checked="_editRow.Publicado" />
+                    </FieldBody>
+                </Field>
+                
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    List<InstalacionViewModel> _instalaciones;
+   
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _instalaciones = await ApiService.GetInstalaciones(AppState.ClubKey);
+            
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    ListContent<ActividadViewModel> _dataGrid;
+    bool _isBusy = false;
+    Validations editValidator;
+    bool isCreating = false;
+    Actividad _editRow = new();
+    Modal editDialog;
+ 
+    
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            _editRow.FechaHora = Fecha.AddHours(Hora.TotalHours);
+            await ApiService.UpsertActividad(AppState.ClubKey, _editRow);
+            await editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemoveActividad(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _dataGrid.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private DateTime Fecha { get; set; }
+    private TimeSpan Hora { get; set; }
+
+    
+
+    private void OnRowClicked(ActividadViewModel obj)
+    {
+        isCreating = false;
+        _editRow = obj.Actividad with {};
+        Fecha = _editRow.FechaHora.Date;
+        Hora = _editRow.FechaHora.Subtract(_editRow.FechaHora.Date);
+        editDialog.Show();
+    }
+
+    private void OnAddButtonClicked()
+    {
+        isCreating = true;
+        _editRow = new Actividad();
+        Fecha = _editRow.FechaHora.Date;
+        Hora = _editRow.FechaHora.Date.AddHours(10).Subtract(_editRow.FechaHora.Date);
+        editDialog.Show();
+    }
+
+}

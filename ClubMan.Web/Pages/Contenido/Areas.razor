@@ -1,0 +1,207 @@
+@page "/areas"
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="InstalacionViewModel" Title="Areas" IconName="IconName.SwimmingPool" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd"   LoadDataAsync="() => ApiService.GetInstalaciones(AppState.ClubKey)">
+    <Columns>
+        <GridColumn HeaderText="Foto" Field="Instalacion.ImagenUrl">
+            <Template>
+                @{
+                    var item = (context as InstalacionViewModel);
+                    <FigureImage Style="height:250px" Rounded="true" Source="@item.Instalacion.ImagenUrl"></FigureImage>
+                }
+            </Template>
+        </GridColumn>
+        <GridColumn HeaderText="Area" Field="Instalacion.Titulo"></GridColumn>
+        <GridColumn HeaderText="Nombre" Field="Localidad.Nombre"></GridColumn>
+        <GridColumn Width="100px" TextAlign="TextAlign.Center" HeaderText="Capacidad" Field="Instalacion.Capacidad"/>
+        <GridColumn Width="100px" TextAlign="TextAlign.Center" HeaderText="Reservable" Field="Instalacion.Reservable">
+            <Template>
+                 @{
+                     var item = (context as InstalacionViewModel);
+                     <Check Disabled="true" TValue="bool" @bind-Checked="@item.Instalacion.Reservable"/>
+                 }
+            </Template>
+        </GridColumn>
+        <GridColumn Width="100px" TextAlign="TextAlign.Center" HeaderText="Activo" Field="Instalacion.Activo">
+            <Template>
+                 @{
+                     var item = (context as InstalacionViewModel);
+                     <Check Disabled="true" TValue="bool" @bind-Checked="@item.Instalacion.Activo"/>
+                 }
+            </Template>
+        </GridColumn>
+    </Columns>
+</ListContent>
+
+
+<Modal @ref="editDialog" Width="Width.Max100" Closed="async () => await editValidator.ClearAll()">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nueva Área" : "Editando Área")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual" Model="_editRow" >
+                <Field>
+                    <FieldLabel ColumnSize="ColumnSize.Is12" TextColor="TextColor.Black50">Localidad</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is12">
+                        <SelectList TabIndex="1" TItem="Localidad" TValue="Guid"
+                                    TextField="@((item) => item.Nombre)"
+                                    ValueField="@((item) => item.Id)"
+                                    Data="_localidades"
+                                    @bind-SelectedValue="_editRow.LocalidadId"
+                                    DefaultItemText="Seleccione Localidad"/>
+                    </FieldBody>
+                </Field>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Nombre</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Titulo">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Descripción</FieldLabel>
+                        <FieldBody>
+                            <MemoEdit @bind-Text="_editRow.Descripcion">
+                                <Feedback><ValidationError/></Feedback>
+                            </MemoEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Imagen Url</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.ImagenUrl">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Fields>
+                    <Field>
+                        <FieldLabel ColumnSize="ColumnSize.Is4" TextColor="TextColor.Black50">Activo</FieldLabel>
+                        <FieldBody>
+                            <Check TValue="bool" @bind-Checked="_editRow.Activo" />
+                        </FieldBody>
+                    </Field>
+                    <Field>
+                        <FieldLabel ColumnSize="ColumnSize.Is4" TextColor="TextColor.Black50">Reservable</FieldLabel>
+                        <FieldBody>
+                            <Check TValue="bool" @bind-Checked="_editRow.Reservable" />
+                        </FieldBody>
+                    </Field>
+                    <Field>
+                        <FieldLabel ColumnSize="ColumnSize.Is4" TextColor="TextColor.Black50">Capacidad</FieldLabel>
+                        <FieldBody>
+                            <NumericEdit TValue="int" @bind-value="_editRow.Capacidad"></NumericEdit>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    List<Localidad> _localidades;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _localidades = await ApiService.GetLocalidades(AppState.ClubKey);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    ListContent<InstalacionViewModel> _dataGrid;
+    bool _isBusy = false;
+    Validations editValidator;
+    bool isCreating = false;
+    Instalacion _editRow = new();
+    Modal editDialog;
+
+    private void DoRowClicked(InstalacionViewModel obj)
+    {
+        isCreating = false;
+        _editRow = obj.Instalacion with {};
+        editDialog.Show();
+    }
+    
+    private void DoShowAdd()
+    {
+        isCreating = true;
+        _editRow = new Instalacion();
+        editDialog.Show();
+    }
+
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            await ApiService.UpsertInstalacion(AppState.ClubKey, _editRow);
+            await editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemoveInstalacion(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _dataGrid.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+    
+}

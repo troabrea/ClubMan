@@ -1,0 +1,51 @@
+@using Border = Blazorise.Border
+<Container  Border="Border.Rounded" Background="Background.Light" Padding="Padding.Is2.FromStart.Is2.FromEnd.Is2.FromTop.Is0.FromBottom">
+    <Row>
+        <Column ColumnSize="ColumnSize.Is2">
+            <FigureImage Style="height: 100px;width: 100px" Source="https://st4.depositphotos.com/4329009/19956/v/450/depositphotos_199564354-stock-illustration-creative-vector-illustration-default-avatar.jpg"/>
+        </Column>
+        <Column ColumnSize="ColumnSize.Is10">
+            <Fields Margin="Margin.Is2.FromTop">
+                <Field ColumnSize="ColumnSize.Is8">
+                    <FieldLabel >Tipo Socio</FieldLabel>
+                    <FieldBody>
+                        <RadioGroup Disabled="true" TValue="TipoSocio" @bind-CheckedValue="Solicitud.TipoSocio" Inline="true">
+                            <Radio Disabled="true" ReadOnly="true" Value="@(TipoSocio.Propietario)">Propietario</Radio>
+                            <Radio Disabled="true" Value="@(TipoSocio.Numeral)">Numeral</Radio>
+                            <Radio Disabled="true" Value="@(TipoSocio.Corporativo)">Corporativo</Radio>
+                            <Radio Disabled="true" Value="@(TipoSocio.Diplomatico)">Diplomático</Radio>
+                            <Radio Disabled="true" Value="@(TipoSocio.Especial)">Especial</Radio>
+                        </RadioGroup>
+                    </FieldBody>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is2">
+                    <FieldLabel>Fecha</FieldLabel>
+                    <FieldBody><DatePicker ReadOnly="true" DisplayFormat="dd-MMM-yyyy" TValue="DateTime" @bind-Date="Solicitud.FechaSolicitud"/></FieldBody>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is2">
+                    <FieldLabel>Solicitud No.</FieldLabel>
+                    <FieldBody><NumericEdit TValue="long" ReadOnly="true" @bind-Value="Solicitud.Id"/></FieldBody>
+                </Field>
+            </Fields>
+        </Column>
+
+    </Row>
+    <Fields>
+        <Field ColumnSize="ColumnSize.Is6">
+            <FieldLabel TextOverflow="Blazorise.TextOverflow.NoWrap">Solicitante</FieldLabel>
+            <FieldBody >
+                <TextEdit ReadOnly="true" @bind-Text="Solicitud.Solicitante"/>
+            </FieldBody>
+        </Field>
+        <Field ColumnSize="ColumnSize.Is6">
+            <FieldLabel TextOverflow="Blazorise.TextOverflow.NoWrap">Beneficiario</FieldLabel>
+            <FieldBody >
+                <TextEdit ReadOnly="true" @bind-Text="Solicitud.Beneficiario"/>
+            </FieldBody>
+        </Field>
+    </Fields>
+</Container>
+
+@code {
+    [Parameter] public Solicitud Solicitud { get; set; }
+}

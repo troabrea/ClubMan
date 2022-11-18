@@ -1,0 +1,72 @@
+@page "/Solicitudes"
+@using Syncfusion.Pdf.Parsing
+@using System.Text
+@using ClubMan.Shared.Helpers
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" IconName="IconName.Inbox" OnRowClicked="DoShowDetail" OnAddButtonClicked="() => _uploadFile.Show()" TItem="Solicitud" Title="Solicitudes" LoadDataAsync="() => ApiService.GetSolicitudes(AppState.ClubKey)">
+    <Columns>
+        <GridColumn Field="Id" Width="100px" HeaderText="No."/>
+        <GridColumn Field="FechaSolicitud" Width="120px" HeaderText="Fecha" Format="dd-MMM-yyyy"></GridColumn>
+        <GridColumn Field="SolicitudPara" HeaderText="Solicitante"/>
+        <GridColumn Field="Celular" Width="120px"></GridColumn>
+        <GridColumn Field="TipoSocio" Width="120px" HeaderText="Tipo"></GridColumn>
+        <GridColumn Field="EstatusSolicitud" Width="120px" HeaderText="Estatus"></GridColumn>
+        <GridColumn Field="UltimoSometimiento" Width="120px" HeaderText="Sometida El" Format="dd-MMM-yyyy"></GridColumn>
+    </Columns>
+</ListContent>
+
+<Modal @ref="_uploadFile">
+    <ModalContent Size="ModalSize.Default">
+        <ModalHeader>
+            <ModalTitle>Cargar Solicitud</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <FilePicker Multiple="false" Filter="*.pdf" Upload="OnFileUpload"></FilePicker>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+@code {
+    ListContent<Solicitud> _dataGrid;
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    Modal _uploadFile;
+    
+    private async Task OnFileUpload(FileUploadEventArgs arg)
+    {
+        try
+        {
+            using ( MemoryStream result = new MemoryStream() )
+            {
+                await arg.File.OpenReadStream( long.MaxValue ).CopyToAsync( result ) ;
+                PdfLoadedDocument pdf = new PdfLoadedDocument(result);
+                using var stream = new MemoryStream(); 
+                pdf.Form.ExportData(stream, DataFormat.Json, "");
+                var json = Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int) stream.Length);
+                var pdfForm = System.Text.Json.JsonSerializer.Deserialize<SolicitudPdfForm>(json);
+                var sol = Solicitud.FromPdfForm(pdfForm);
+
+                await ApiService.UpsertSolicitud(AppState.ClubKey, sol);
+                await _uploadFile.Hide();
+                //
+                _dataGrid.ReloadData();
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrido un error importando solicitud.", "Alerta");
+        }
+    }
+
+    private void DoShowDetail(Solicitud sol)
+    {
+        NavigationManager.NavigateTo($"/DetalleSolicitud/{sol.Id}");
+    }
+
+}

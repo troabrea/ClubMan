@@ -1,0 +1,22 @@
+@layout RootLayout
+@inherits LayoutComponentBase
+
+<Layout >
+    <LayoutHeader Fixed>
+        <Bar Breakpoint="Breakpoint.Desktop" Background="Background.Primary" ThemeContrast="ThemeContrast.Light">
+            <BarBrand>
+                <BarItem>
+                    <BarLink To="">
+                        <Heading Size="HeadingSize.Is4">Club Manager</Heading>
+                    </BarLink>
+                </BarItem>
+            </BarBrand>
+        </Bar>
+    </LayoutHeader>
+    <LayoutContent Class="page-background-class" Background="Background.Transparent" Padding="Padding.Is4.OnX">
+            @Body
+    </LayoutContent>
+    <LayoutFooter>
+        <Footer></Footer>
+    </LayoutFooter>
+</Layout>

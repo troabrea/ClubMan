@@ -1,0 +1,33 @@
+@if(Solicitud != null && Solicitud.SociosSecundadores.Any()) {
+<Container Margin="Margin.Is2">
+    @foreach (var dep in Solicitud.SociosSecundadores)
+    {
+        <Container Margin="Margin.Is4.FromTop" >
+            <Fields Margin="Margin.Is2.FromTop">
+                <Field Horizontal ColumnSize="ColumnSize.Is8">
+                    <FieldLabel ColumnSize="ColumnSize.Is4">Nombre</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is8">
+                        <TextEdit ReadOnly="true" @bind-Text="dep.NombreSocio"/>
+                    </FieldBody>
+                </Field>
+                <Field Horizontal ColumnSize="ColumnSize.Is4">
+                    <FieldLabel ColumnSize="ColumnSize.Is4">Número</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is8">
+                        <TextEdit ReadOnly="true" @bind-Text="dep.NumeroSocio"/>
+                    </FieldBody>
+                </Field>
+            </Fields>
+        </Container>
+    }
+</Container>
+}
+else
+{
+    <EmptyView/>
+}
+@code {
+
+    [Parameter]
+    public Solicitud Solicitud { get; set; }
+
+}

@@ -1,0 +1,113 @@
+@using Action = System.Action
+    <Modal @ref="editDialog" Width="Width.Max100" Closed="async () => await editValidator.ClearAll()">
+@if(Solicitud != null) {
+        <ModalContent Size="ModalSize.Large">
+            <ModalHeader>
+                @if (ReviewForm == ReviewForm.Approve)
+                {
+                    <ModalTitle>Aprobación de Solicitud</ModalTitle>
+                } else if (ReviewForm == ReviewForm.Postpone)
+                {
+                    <ModalTitle>Postponindo Revsión de Solicitud</ModalTitle>
+                }
+                else
+                {
+                    <ModalTitle>Rechazo de Solicitud</ModalTitle>
+                }
+                <CloseButton/>
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="editValidator" Mode="ValidationMode.Manual" Model="_revision" >
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Fecha Revisión</FieldLabel>
+                        <DatePicker DisplayFormat="dd-MMM-yyyy" TValue="DateTime"  @bind-Date="_revision.FechaRevision"/>
+                    </Field>
+                    @if (ReviewForm == ReviewForm.Approve)
+                    {
+                        <Validation Validator="ValidationRule.IsNotEmpty">
+                            <Field>
+                                <FieldLabel TextColor="TextColor.Black50">Número Asignado</FieldLabel>
+                                <FieldBody>
+                                    <MemoEdit @bind-Text="_revision.NumeroAprobacion">
+                                        <Feedback><ValidationError/></Feedback>
+                                    </MemoEdit>
+                                </FieldBody>
+                            </Field>
+                        </Validation>
+                        if (Solicitud.TipoSocio == TipoSocio.Propietario)
+                        {
+                            <Field>
+                                <FieldLabel TextColor="TextColor.Black50">Número Asignado</FieldLabel>
+                                <FieldBody>
+                                    <NumericEdit TValue="int" @bind-Value="_revision.CantidadAcciones">
+                                        <Feedback><ValidationError/></Feedback>
+                                    </NumericEdit>
+                                </FieldBody>
+                            </Field>
+                            <Field>
+                                <FieldLabel TextColor="TextColor.Black50">Número Asignado</FieldLabel>
+                                <FieldBody>
+                                    <NumericEdit TValue="decimal" @bind-Value="_revision.Valoracciones">
+                                        <Feedback><ValidationError/></Feedback>
+                                    </NumericEdit>
+                                </FieldBody>
+                            </Field>
+                        }
+                    }
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field>
+                            <FieldLabel TextColor="TextColor.Black50">Observaciones</FieldLabel>
+                            <FieldBody>
+                                <MemoEdit @bind-Text="_revision.Observaciones">
+                                    <Feedback><ValidationError/></Feedback>
+                                </MemoEdit>
+                            </FieldBody>
+                        </Field>
+                    </Validation>
+                </Validations>
+            </ModalBody>
+            <ModalFooter >
+                <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Revisión</Button>
+            </ModalFooter>
+        </ModalContent>
+}
+    </Modal>
+@code {
+
+    private bool _isBusy;
+    Modal editDialog;
+    private Validations editValidator;
+    private Revision _revision;
+    
+    [CascadingParameter] AppState AppState { get; set; }
+    private Solicitud Solicitud { get; set; }
+    private ReviewForm ReviewForm { get; set; }
+
+    public Revision Revision => _revision;
+    
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        if (!await editValidator.ValidateAll())
+        {
+            return;
+        }
+        await editDialog.Hide();
+        _onSave?.Invoke(_revision);
+    }
+
+    Action<Revision> _onSave; 
+    
+    public Task ShowAsync(Solicitud solicitud, ReviewForm reviewForm, Revision revision, Action<Revision> onSave)
+    {
+        Solicitud = solicitud;
+        ReviewForm = reviewForm;
+        _revision = revision;
+        _onSave = onSave;
+        //
+        StateHasChanged();
+        //
+        return editDialog.Show();
+    }
+    
+}

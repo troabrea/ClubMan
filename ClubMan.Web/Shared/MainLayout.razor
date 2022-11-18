@@ -1,0 +1,23 @@
+﻿@layout RootLayout
+@inherits LayoutComponentBase
+
+<Layout>
+    <LayoutHeader>
+        <TopMenu  />
+    </LayoutHeader>
+    <Layout Sider>
+        <LayoutSider>
+            <LayoutSiderContent>
+                <SideMenu />
+            </LayoutSiderContent>
+        </LayoutSider>
+        <Layout>
+            <LayoutContent Padding="Padding.Is4.OnX">
+                @Body
+            </LayoutContent>
+        </Layout>
+    </Layout>
+    <LayoutFooter>
+        <Footer></Footer>
+    </LayoutFooter>
+</Layout>

@@ -1,0 +1,148 @@
+@using System.Globalization
+@using Action = System.Action
+@if(FilterModel != null) {
+    <Container Padding="Padding.Is2">
+        <Bar Breakpoint="Breakpoint.Desktop"
+             Background="Background.Light"
+             ThemeContrast="ThemeContrast.Light">
+            <BarBrand>
+                <BarIcon><Icon Name="IconName.Filter"/></BarIcon>
+            </BarBrand>
+            <BarToggler />
+            <BarMenu>
+                <BarStart>
+                    <BarItem>
+                        <Button Type="ButtonType.Link" Clicked="() => OnAddRecord?.Invoke()">
+                            <Icon Name="IconName.Add"></Icon>
+                        </Button>
+                    </BarItem>
+                    @ToolbarItems
+                    @if (FilterModel.ShowRangeSelector)
+                    {
+                        <BarItem>
+                            <BarDropdown>
+                                <BarDropdownToggle>Rango</BarDropdownToggle>
+                                <BarDropdownMenu>
+                                    <BarDropdownItem Clicked="SetToday">Hoy</BarDropdownItem>
+                                    <BarDropdownItem Clicked="SetYesterday">Ayer</BarDropdownItem>
+                                    <BarDropdownItem Clicked="SetThisWeek">Esta Semana</BarDropdownItem>
+                                    <BarDropdownItem Clicked="SetThisMonth">Este Mes</BarDropdownItem>
+                                    <BarDropdownItem Clicked="SetLastMonth">Mes Pasado</BarDropdownItem>
+                                    <BarDropdownItem Clicked="SetThisYear">Este Año</BarDropdownItem>
+                                </BarDropdownMenu>
+                            </BarDropdown>
+                        </BarItem>
+                    }
+                    @if (FilterModel.ShowDateFrom)
+                    {
+                        <BarItem>
+                            <DatePicker TValue="DateTime" @bind-Date="FilterModel.FromDate" DisplayFormat="dd-MMM-yyyy"/>
+                        </BarItem>
+                    }
+                    @if (FilterModel.ShowDateTo)
+                    {
+                        <BarItem>
+                            <Label Margin="Margin.Is1.FromStart.Is1.FromEnd"></Label>
+                        </BarItem>
+                        <BarItem>
+                            <DatePicker TValue="DateTime" @bind-Date="FilterModel.ToDate" DisplayFormat="dd-MMM-yyyy"/>
+                        </BarItem>
+                    }
+                    <BarItem>
+                    </BarItem>
+                </BarStart>
+                <BarEnd>
+                    <BarItem>
+                        <Button Type="ButtonType.Link" Clicked="() => OnRefresh?.Invoke()">
+                            <Icon Name="IconName.Redo"></Icon>
+                        </Button>
+                    </BarItem>
+                    <BarItem>
+                        <BarDropdown  RightAligned="true">
+                             
+                            <BarDropdownToggle>
+                                Exportar
+                            </BarDropdownToggle>
+                            <BarDropdownMenu>
+                                <BarDropdownItem Clicked="() => OnExport?.Invoke(ExportFormat.Excel)">Excel</BarDropdownItem>
+                                <BarDropdownItem Clicked="() => OnExport?.Invoke(ExportFormat.CSV)">CSV</BarDropdownItem>
+                                <BarDropdownItem Clicked="() => OnExport?.Invoke(ExportFormat.PDF)">PDF</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </BarDropdown>
+                    </BarItem>
+                    <BarBrand>
+                        <BarIcon><Icon Name="IconName.Filter"/></BarIcon>
+                    </BarBrand>
+                </BarEnd>
+            </BarMenu>
+        </Bar>
+    </Container>
+}
+
+@code {
+    [Parameter] public RenderFragment ToolbarItems { get; set; }
+    [CascadingParameter]
+    public AppState AppState { get; set; }
+    [Parameter]
+    public Action OnAddRecord { get; set; }
+    [Parameter]
+    public FilterModel FilterModel { get; set; }
+    [Parameter]
+    public Action OnFilterUpdate { get; set; }
+    [Parameter]
+    public Action<ExportFormat> OnExport { get; set; }
+    [Parameter]
+    public Action OnRefresh { get; set; }
+    
+    private void DoNotifyUpdate()
+    {
+        OnFilterUpdate?.Invoke();
+    }
+
+    private void SetThisMonth()
+    {
+        FilterModel.FromDate = new DateTime(DateTime.Today.Year,DateTime.Today.Month,1);
+        FilterModel.ToDate = DateTime.Today;
+        DoNotifyUpdate();
+    }
+
+    private void SetToday()
+    {
+        FilterModel.FromDate = DateTime.Today;
+        FilterModel.ToDate = DateTime.Today;
+        DoNotifyUpdate();
+    }
+
+    private void SetLastMonth()
+    {
+        FilterModel.ToDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddDays(-1);
+        FilterModel.FromDate = new DateTime(FilterModel.ToDate.Year, FilterModel.ToDate.Month, 1);
+        DoNotifyUpdate();
+    }
+
+    private void SetYesterday()
+    {
+        FilterModel.ToDate = DateTime.Today.AddDays(-1);
+        FilterModel.FromDate = DateTime.Today.AddDays(-1);
+        DoNotifyUpdate();
+    }
+
+    private void SetThisYear()
+    {
+        FilterModel.FromDate = new DateTime(DateTime.Today.Year, 1, 1);
+        FilterModel.ToDate = new DateTime(DateTime.Today.Year, 12, 31);
+        DoNotifyUpdate();
+    }
+
+    private void SetThisWeek()
+    {
+        var today = DateTime.Today;
+        var monday = new GregorianCalendar().AddDays(today, -((int)today.DayOfWeek) + 1);
+        FilterModel.FromDate = monday;
+        FilterModel.ToDate = today;
+        DoNotifyUpdate();
+    }
+
+    
+
+}

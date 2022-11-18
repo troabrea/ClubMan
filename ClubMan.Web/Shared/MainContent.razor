@@ -1,0 +1,38 @@
+
+<Container Padding="Padding.Is2">
+    <Card Margin="Margin.Is2.FromTop" Shadow="Shadow.Small">
+        <CardHeader>
+            <Row>
+                <Column ColumnSize="ColumnSize.IsAuto">
+                    <Addons>
+                        <Addon AddonType="AddonType.Start">
+                            <AddonLabel Background="Background.Transparent" Border="Blazorise.Border.Is0"><Icon Name="@IconName" IconSize="IconSize.Large" TextColor="TextColor.Secondary"/></AddonLabel>
+                        </Addon>
+                        <Addon AddonType="AddonType.Body">
+                            <Heading Size="HeadingSize.Is5" Margin="Margin.Is2.FromTop" TextColor="TextColor.Secondary">@Title</Heading>
+                        </Addon>
+                    </Addons>
+                </Column>
+                <Column Flex="Flex.Fill" ColumnSize="ColumnSize.IsAuto">
+                    <Container  >
+                        @ToolbarContent
+                    </Container>
+                </Column>
+            </Row>
+        </CardHeader>
+        <CardBody Padding="Padding.Is2" >
+            @ChildContent
+        </CardBody>
+    </Card>
+</Container>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public RenderFragment ToolbarContent { get; set; }
+    [Parameter]
+    public string Title { get; set; }
+    [Parameter]
+    public IconName IconName { get; set; }
+}

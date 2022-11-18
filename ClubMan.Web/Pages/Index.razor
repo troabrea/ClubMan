@@ -1,0 +1,54 @@
+﻿
+@page "/"
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+@using System.Collections.Immutable
+
+
+
+<MainContent Title="Dashboard" IconName="@IconName.Home">
+    <ChildContent>
+        @if (_isLoading)
+        {
+            <Loading/>
+        }
+        
+        <SfSchedule TValue="ActividadViewModel" CurrentView="View.MonthAgenda" StartHour="10:00" DateFormat="dd-MMM-yyyy"  >
+            <ScheduleEventSettings AllowEditing="false" AllowAdding="false" AllowDeleting="false" TValue="ActividadViewModel" DataSource="_actividades">
+                <ScheduleViews>
+                    <ScheduleView Option="View.Day"></ScheduleView>
+                    <ScheduleView Option="View.Week"></ScheduleView>
+                    <ScheduleView Option="View.Month"></ScheduleView>
+                    <ScheduleView Option="View.MonthAgenda"></ScheduleView>
+                </ScheduleViews>
+                <ScheduleField Id="@nameof(ActividadViewModel.Id)">
+                    <FieldSubject Name="Actividad.Titulo"></FieldSubject>
+                    <FieldLocation Name="Instalacion.Titulo"></FieldLocation>
+                    <FieldStartTime Name="StartTime"></FieldStartTime>
+                    <FieldEndTime Name="EndTime"></FieldEndTime>
+                </ScheduleField>
+            </ScheduleEventSettings>
+        </SfSchedule>
+
+
+    </ChildContent>
+</MainContent>
+
+@code {
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+    bool _isLoading = false;
+    
+    List<ActividadViewModel> _actividades;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender || _actividades == null || _actividades.Count == 0)
+        {
+            _actividades = await ApiService.GetActividades(AppState.ClubKey);
+            StateHasChanged();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}

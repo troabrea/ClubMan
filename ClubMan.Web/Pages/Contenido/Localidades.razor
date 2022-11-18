@@ -1,0 +1,174 @@
+@page "/localidades"
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="Localidad" Title="Localidades" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd" IconName="IconName.Map" LoadDataAsync="() => ApiService.GetLocalidades(AppState.ClubKey)">
+    <Columns>
+        <GridColumn Width="80px" HeaderText="Orden" Field="@nameof(Localidad.Orden)" />
+        <GridColumn HeaderText="Título" Field="@nameof(Localidad.Nombre)"/>
+        <GridColumn HeaderText="Categoría" Field="@nameof(Localidad.Direccion)"/>
+        <GridColumn HeaderText="Sólo Oficina" Width="80px" AllowFiltering="false" Field="@nameof(Localidad.SoloOficina)">
+            <Template>
+                 @{
+                     var item = (context as Localidad);
+                     <Check Disabled="true" TValue="bool" @bind-Checked="@item.SoloOficina"/>
+                 }
+            </Template>
+        </GridColumn>
+        <GridColumn HeaderText="Publicado" Width="80px" AllowFiltering="false" Field="@nameof(Servicio.Publicado)">
+            <Template>
+                @{
+                    var item = (context as Localidad);
+                    <Check Disabled="true" TValue="bool" @bind-Checked="@item.Publicado"/>
+                }
+            </Template>
+        </GridColumn>
+    </Columns>
+</ListContent>
+
+<Modal @ref="editDialog" Width="Width.Max100" Closed="async () => await editValidator.ClearAll()">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nueva Localidad" : "Editando Localidad")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual" Model="_editRow" >
+                    <Fields>
+                        <Field ColumnSize="ColumnSize.Is4">
+                            <FieldLabel TextColor="TextColor.Black50">Orden</FieldLabel>
+                            <NumericEdit TValue="int" @bind-Value="_editRow.Orden"/>
+                        </Field>
+                        <Field ColumnSize="ColumnSize.Is4">
+                            <FieldLabel TextColor="TextColor.Black50">Sólo Oficina</FieldLabel>
+                            <Check TValue="bool" @bind-Checked="_editRow.SoloOficina"></Check>
+                        </Field>
+                        <Field ColumnSize="ColumnSize.Is4">
+                            <FieldLabel TextColor="TextColor.Black50">Publicado en App</FieldLabel>
+                            <Check TValue="bool" @bind-Checked="_editRow.Publicado"></Check>
+                        </Field>
+                        
+                    </Fields>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field>
+                            <FieldLabel TextColor="TextColor.Black50">Nombre</FieldLabel>
+                            <FieldBody>
+                                <TextEdit @bind-Text="_editRow.Nombre">
+                                    <Feedback><ValidationError/></Feedback>
+                                </TextEdit>
+                            </FieldBody>
+                        </Field>
+                    </Validation>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field>
+                            <FieldLabel TextColor="TextColor.Black50">Dirección</FieldLabel>
+                            <MemoEdit @bind-Text="_editRow.Direccion"/>
+                            <FieldHelp></FieldHelp>
+                        </Field>
+                    </Validation>
+                    <Fields>
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Latitud</FieldLabel>
+                            <NumericEdit TValue="double" @bind-Value="_editRow.Latitud"/>
+                        </Field>
+
+
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Longitud</FieldLabel>
+                            <NumericEdit TValue="double" @bind-Value="_editRow.Longitud"/>
+                        </Field>
+
+                    </Fields>
+                    
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+
+    ListContent<Localidad> _dataGrid;
+    
+    private Modal editDialog;
+    private bool isCreating = false;
+    private bool _isBusy = false;
+    private Validations editValidator;    
+    private Localidad _editRow = new();
+    
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    private void DoShowAdd()
+    {
+        isCreating = true;
+        _editRow = new Localidad();
+        editDialog.Show();
+    }
+
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            await ApiService.UpsertLocalidad(AppState.ClubKey, _editRow);
+            await editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemoveLocalidad(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _dataGrid.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void DoRowClicked(Localidad obj)
+    {
+        isCreating = false;
+        _editRow = obj with {};
+        editDialog.Show();
+    }
+
+}

@@ -1,0 +1,194 @@
+<Bar Breakpoint="Breakpoint.Desktop" NavigationBreakpoint="Breakpoint.Tablet" ThemeContrast="ThemeContrast.Light"
+     Mode="BarMode.VerticalInline" CollapseMode="BarCollapseMode.Small">
+    @if (logoIcon != null)
+    {
+        <BarBrand>
+            <BarItem>
+                <BarLink >
+                    @if (AppState.ClubKey != "")
+                    {
+                    @* <BarIcon IconName="logoIcon"/> *@
+                        <Image Style="height: 32px;width: 32px" Source="@AppState.LogoUrl"/>
+                    }
+                    @AppState.ClubName
+                </BarLink>
+            </BarItem>
+        </BarBrand>
+    }
+    <BarToggler/>
+    <BarMenu>
+        @if (!AppState.IsSystem)
+        {
+            <BarStart>
+                <BarItem>
+                    <BarLink To="">
+                        <BarIcon IconName="IconName.Dashboard"/>
+                        Dashboard
+                    </BarLink>
+                </BarItem>
+                <Divider/>
+                <BarItem>
+                    <BarLink To="Actividades">
+                        <BarIcon IconName="IconName.IdCard"/>
+                        Socios
+                    </BarLink>
+                </BarItem>
+                <BarItem>
+                    <BarLink To="Solicitudes">
+                        <BarIcon IconName="IconName.Inbox"/>
+                        Solicitudes
+                    </BarLink>
+                </BarItem>
+                <BarItem>
+                    <BarDropdown>
+                        <BarDropdownToggle>
+                            <BarIcon IconName="IconName.Smartphone" />
+                            App Móvil
+                        </BarDropdownToggle>
+                        <BarDropdownMenu>
+                            <BarItem>
+                                <BarLink To="Actividades">
+                                    <BarIcon IconName="IconName.CalendarWeek"/>
+                                    Actividades
+                                </BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="Noticias">
+                                    <BarIcon IconName="IconName.PaperPlane"/>
+                                    Noticias
+                                </BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="Servicios">
+                                    <BarIcon IconName="IconName.HandsHelping"/>
+                                    Servicios
+                                </BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="Areas">
+                                    <BarIcon IconName="IconName.SwimmingPool"/>
+                                    Areas
+                                </BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="Localidades">
+                                    <BarIcon IconName="IconName.MapMarker"/>
+                                    Localidades
+                                </BarLink>
+                            </BarItem>
+                            <Divider/>
+                            <BarItem>
+                                <BarLink To="UsuarioApp">
+                                    <BarIcon IconName="IconName.Users"/>
+                                    Usuarios App
+                                </BarLink>
+                            </BarItem>
+                        </BarDropdownMenu>
+                    </BarDropdown>
+                </BarItem>
+                <Divider/>
+                <BarItem>
+                    <BarDropdown>
+                        <BarDropdownToggle>
+                            <BarIcon IconName="IconName.Wrench"/>
+                            Configuración
+                        </BarDropdownToggle>
+                        <BarDropdownMenu>
+                            <BarItem>
+                                <BarLink To="Politicas">
+                                    <BarIcon IconName="IconName.CheckDouble"/>
+                                    Políticas
+                                </BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="UsuariosPortal">
+                                    <BarIcon IconName="IconName.Lock"/>
+                                    Seguridad
+                                </BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="Preferencias">
+                                    <BarIcon IconName="IconName.Info"/>
+                                    Información
+                                </BarLink>
+                            </BarItem>
+                        </BarDropdownMenu>
+                    </BarDropdown>
+                </BarItem>
+            </BarStart>
+            @if (AppState.IsAdmin)
+            {
+                <BarEnd>
+                    <BarItem>
+                        <BarLink To="Productos">
+                            <BarIcon IconName="IconName.BalanceScale"/>
+                            Productos
+                        </BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <BarLink To="UsuariosPortal">
+                            <BarIcon IconName="IconName.UserFriends"/>
+                            Usuarios
+                        </BarLink>
+                    </BarItem>
+
+                    <BarItem>
+                        <BarLink To="Preferencias">
+                            <BarIcon IconName="IconName.Gavel"/>
+                            Preferencias
+                        </BarLink>
+                    </BarItem>
+                </BarEnd>
+            }
+        }
+        else
+        {
+            <BarStart>
+                <BarItem>
+                    <BarLink To="">
+                        <BarIcon IconName="IconName.Dashboard"/>
+                        Dashboard
+                    </BarLink>
+                </BarItem>
+                <BarItem>
+                    <BarLink To="Empresas">
+                        <BarIcon IconName="IconName.Building"/>
+                        Empresas
+                    </BarLink>
+                </BarItem>
+                <BarItem>
+                    <BarLink To="Usuarios">
+                        <BarIcon IconName="IconName.Users"/>
+                        Usuarios
+                    </BarLink>
+                </BarItem>
+            </BarStart>
+        }
+    </BarMenu>
+</Bar>
+
+@code {
+
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    private Task DoLogOut()
+    {
+        return Task.CompletedTask;
+    }
+
+    protected override void OnInitialized()
+    {
+        logoIcon = @<img src="@AppState.LogoUrl" style="width: 32px;heigh: 32px"/>;
+
+            @*
+            string.IsNullOrEmpty(AppState.LogoUrl) 
+            ? @<img src="https://pbs.twimg.com/profile_images/948224086060224517/4xQo0Go2_400x400.jpg" style="width: 32px;heigh: 32px" />
+            : @<img srcset="@AppState.LogoUrl" style="width: 32px;heigh: 32px" />;
+            *@
+
+        StateHasChanged();
+    }
+
+    RenderFragment logoIcon;
+}

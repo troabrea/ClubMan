@@ -1,0 +1,117 @@
+@page "/login"
+@layout LoginLayout
+@inject AuthenticationStateProvider AuthStateProvider;
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
+
+@inject ISystemApiService SystemApiService;
+
+<Container Flex="Flex.AlignItems.Center" >
+    <Column Margin="Margin.IsAuto" ColumnSize="ColumnSize.Is4.OnDesktop.Is8.OnTablet.Is12.OnMobile">
+        <Form @onsubmit="DoLogin">
+        <Card Border="Blazorise.Border.Rounded.Is2.Primary" Margin="Margin.Is5.FromTop" Shadow="Shadow.Large">
+            <CardHeader>
+                <CardTitle >
+                    <Heading TextAlignment="TextAlignment.Center" Size="HeadingSize.Is4">
+                        <Icon Name="IconName.UserCircle" TextAlignment="TextAlignment.Center" TextColor="TextColor.Primary" IconSize="IconSize.x2"/>
+                        <br/>
+                        Inicio de Sesión
+                    </Heading>
+                </CardTitle>
+            </CardHeader>
+            <CardBody>
+                <Validations @ref="_loginValidator" Mode="ValidationMode.Manual" Model="_loginModel">
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field>
+                            <FieldLabel TextColor="TextColor.Black50">Usuario</FieldLabel>
+                            <TextEdit @bind-Text="_loginModel.Username" Placeholder="Indique su nombre de usuario">
+                                <Feedback>
+                                    <ValidationError>Debe especificar un nombre de usuario.</ValidationError>
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field>
+                            <FieldLabel TextColor="TextColor.Black50">Clave</FieldLabel>
+                            <TextEdit @bind-Text="_loginModel.Password" Role="TextRole.Password" Placeholder="Clave de acceso">
+                                <Feedback>
+                                    <ValidationError>Debe especificar una clave de acceso.</ValidationError>
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+                </Validations>
+            </CardBody>
+            <CardFooter>
+                <Container Flex="Flex.AlignContent.Center">
+                    <Button @bind-Loading="_isBusy" Type="ButtonType.Submit" TextAlignment="TextAlignment.Center" VerticalAlignment="VerticalAlignment.Middle" Margin="Margin.Is3.OnY.IsAuto.OnX" Color="Color.Primary">
+                        <LoadingTemplate>
+                            <Container Flex="Flex.AlignContent.Center">
+                                <SpinKit Type="SpinKitType.Circle" Size="20px" Color="#ffffff"/>
+                            </Container>
+                        </LoadingTemplate>
+                        <ChildContent>
+                            Iniciar Sesión
+                        </ChildContent>
+                    </Button>
+                </Container>
+            </CardFooter>
+        </Card>
+        </Form>
+    </Column>
+</Container>
+@code {
+
+    bool _isBusy = false;
+    
+    [CascadingParameter] 
+    private AppState AppState { get; set; }
+    
+    Validations _loginValidator;
+    LoginModel _loginModel = new LoginModel();
+
+    private async Task DoLogin()
+    {
+        if(_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            if(await _loginValidator.ValidateAll())
+            {
+                await _loginValidator.ClearAll();
+                var user = await SystemApiService.LoginUser( _loginModel.Username,_loginModel.Password);
+                if (user != null)
+                {
+                    var empresa = await SystemApiService.GetEmpresa(user.EmpresaId.ToString());
+                    var myAuthStateProvider = (CustomAuthenticationProvider)AuthStateProvider;
+                    var userSession = new UserSession()
+                    {
+                        UserId = user.UsuarioId,
+                        UserName = user.NombreUsuario,
+                        Role = user.Rol,
+                        ClubKey = user.EmpresaId.ToString() ?? string.Empty,
+                        ClubName = empresa?.Nombre ?? "Baroli Technologies",
+                        LogoUrl = empresa?.LogoUrl ?? string.Empty,
+                        PrimaryColor = empresa?.PrimaryColor ?? "#0288d2",
+                        SecondaryColor = empresa?.SecondaryColor ?? "#0288d2"
+                    };
+
+                    await myAuthStateProvider.UpdateAuthenticationState(userSession);
+                
+                    NavigationManager.NavigateTo("/", true);
+                }
+                else
+                {
+                    await  NotificationService.Error("Usuario o clave incorrecta");
+                }
+            }
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+}

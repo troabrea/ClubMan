@@ -1,0 +1,114 @@
+@page "/Politicas"
+@inject IApiService ApiService
+@inject INotificationService NotificationService
+
+<MainContent Title="Políticas" IconName="@IconName.CheckDouble">
+    @if (_politica == null)
+    {
+        <Loading/>
+    }
+    else
+    {
+        <Validations @ref="editValidator" Mode="ValidationMode.Manual">
+            
+            <Heading Size="HeadingSize.Is6">Invitados</Heading>
+
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel TextColor="TextColor.Black50">Menoría de Edad</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.MenoriaDeEdad"></NumericEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel TextColor="TextColor.Black50">Invitados por Visita</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.InvitadosPorDia"></NumericEdit>
+                </Field>
+                 <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel TextColor="TextColor.Black50">Entradas al mes</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.VisitasAlMesInvitados"/>
+                </Field>
+            </Fields>
+
+            <Heading Size="HeadingSize.Is6">Hospedaje</Heading>
+            
+            
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Cantidad Huespedes</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.LimiteHuespedes"></NumericEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Dias como Huesped</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.DiasMembresiaHuesped"></NumericEdit>
+                </Field>
+            </Fields>
+
+            <Heading Size="HeadingSize.Is6">Pasividad y No-Residentes</Heading>
+            
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Cuotas Pasividad</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.CuotasParaPasividad"></NumericEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Entradas No Residentes</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.EntradasNoResidentes"></NumericEdit>
+                </Field>
+            </Fields>
+            
+            <Heading Size="HeadingSize.Is6">Honoríficos</Heading>
+            
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Edad</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.EdadParaHonorifico"></NumericEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Años Membresia</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.AntiguedadParaHonorifico"></NumericEdit>
+                </Field>
+            </Fields>
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Edad Propietarios</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.EdadParaHonorificoPropietario"></NumericEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Años Membresia Propietarios</FieldLabel>
+                    <NumericEdit @bind-Value="_politica.AntiguedadParaHonorificoPropietario"></NumericEdit>
+                </Field>
+            </Fields>
+        </Validations>
+
+        <Divider/>
+        <Button Float="Float.End" TextAlignment="TextAlignment.Center" Margin="Margin.Is2" Color="Color.Primary" Clicked="DoSaveChanges">Guardar Cambios</Button>
+    }
+</MainContent>
+
+
+@code {
+
+    Validations editValidator;
+
+    //string _imageUrl = null;
+
+    private Politica _politica;
+
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _politica = await ApiService.GetPoliticas(AppState.ClubKey);
+            StateHasChanged();
+        }
+    }
+
+    private async Task DoSaveChanges()
+    {
+        await ApiService.UpsertPoliticas(AppState.ClubKey, _politica);
+        await NotificationService.Success("Registro actualizado exitosamente.");
+    }
+
+}

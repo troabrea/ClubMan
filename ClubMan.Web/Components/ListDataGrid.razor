@@ -1,0 +1,123 @@
+@typeparam TItem
+
+<MainContent Title="@Title" IconName="@IconName">
+    <ChildContent>
+        @if (_isLoading)
+        {
+            <Loading/>
+        }
+        else if(_data != null)
+        {
+            <ListToolPanel ToolbarItems="@ToolbarItems" FilterModel="FilterModel" OnRefresh="LoadInitialData" />
+            @if (_showGrid)
+            {
+                <DataGrid TItem="TItem" Data="_data" 
+                          Bordered="true" 
+                          Sortable="true" 
+                          Filterable="true"
+                          FilterMethod="DataGridFilterMethod.Contains"
+                          CommandMode="DataGridCommandMode.ButtonRow"
+                          UseInternalEditing="false"
+                          RowSelectable="(_) => false"
+                          RowClicked="(e)  => OnRowClicked?.Invoke(e.Item)"
+                          PageSizes="new []{10,25,50,100,200}" 
+                          PagerPosition="DataGridPagerPosition.Bottom" 
+                          ShowPager="true"
+                          Responsive>
+                    <DataGridColumns>
+                        @Columns
+                    </DataGridColumns>
+                    <ButtonRowTemplate>
+                        @if(OnAddButtonClicked != null)
+                        {
+                            <Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="() => OnAddButtonClicked?.Invoke()">
+                                <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+                            </Button>
+                        }
+                    </ButtonRowTemplate>
+                    <EmptyTemplate>
+                        <EmptyView/>
+                    </EmptyTemplate>
+                </DataGrid>
+            }
+            else
+            {
+                @CustomTemplate
+            }
+        }
+    </ChildContent>
+</MainContent>
+
+@code {
+
+    List<TItem> _data;
+    
+    [Parameter] public string Title { get; set; }
+    [Parameter] public IconName IconName { get; set; }
+    [Parameter] public RenderFragment Columns { get; set; }
+    [Parameter] public RenderFragment ToolbarItems { get; set; }
+    [Parameter] public RenderFragment CustomTemplate { get; set; }
+    [Parameter] public Func<Task<List<TItem>>> LoadDataAsync { get; set; }
+
+    [Parameter]
+    public FilterModel FilterModel { get; set; } = FilterModel.Empty();
+    
+    [Parameter]
+    public Action<TItem> OnRowClicked { get; set; }
+    [Parameter]
+    public System.Action OnAddButtonClicked { get; set; }
+    
+    
+    bool _isLoading;
+
+    private bool _showGrid = true;
+
+    public void ShowDataGrid()
+    {
+        _showGrid = true;
+        StateHasChanged();
+    }
+    public void ShowCustomTemplate()
+    {
+        _showGrid = false;
+        StateHasChanged();
+    }
+
+    public List<TItem> Data => _data ?? new List<TItem>();
+    
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            LoadInitialData();
+        }
+        return Task.CompletedTask;
+    }
+
+    private async void LoadInitialData()
+    {
+        if(_isLoading) return;
+        try
+        {
+            _isLoading = true;
+            StateHasChanged();
+            _data = await LoadDataAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        finally
+        {
+            _isLoading=false;
+            StateHasChanged();
+        }
+
+    }
+
+    public void ReloadData()
+    {
+        LoadInitialData();
+    }
+
+}

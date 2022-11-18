@@ -1,0 +1,17 @@
+<Row>
+    <Column ColumnSize="ColumnSize.Is3.OnDesktop.Is2.OnTablet.Is1.OnMobile"/>
+    <Column ColumnSize="ColumnSize.Is4.OnDesktop.Is8.OnTablet.Is10.OnMobile">
+        <Container Margin="Margin.Is3.OnAll" Background="Background.Dark" Border="Blazorise.Border.Rounded.Is5.Dark" Padding="Padding.Is2.OnAll.Is4.FromBottom">
+            <Container Background="Background.Body" Border="Blazorise.Border.RoundedZero.Is2.Light" Padding="Padding.Is0">
+                @ChildContent
+            </Container>
+        </Container>
+    </Column>
+    <Column ColumnSize="ColumnSize.Is3.OnDesktop.Is2.OnTablet.Is1.OnMobile"/>
+</Row>
+
+@code
+{
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

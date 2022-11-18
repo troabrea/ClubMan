@@ -1,0 +1,59 @@
+@if(Solicitud != null && Solicitud.Emabarcaciones.Any()) {
+    <Container Margin="Margin.Is2">
+        @foreach (var dep in Solicitud.Emabarcaciones)
+        {
+            <Container Margin="Margin.Is4.FromTop" >
+                <Fields Margin="Margin.Is2.FromTop">
+                    <Field Horizontal ColumnSize="ColumnSize.Is5">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Nombre</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit ReadOnly="true" @bind-Text="dep.Nombre"/>
+                        </FieldBody>
+                    </Field>
+                    <Field Horizontal ColumnSize="ColumnSize.Is4">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Marca</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit ReadOnly="true" @bind-Text="dep.Marca"/>
+                        </FieldBody>
+                    </Field>
+                    <Field Horizontal ColumnSize="ColumnSize.Is3">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Tipo</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit ReadOnly="true" @bind-Text="dep.Tipo"/>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+                <Fields Margin="Margin.Is2.FromTop">
+                    <Field Horizontal ColumnSize="ColumnSize.Is5">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Eslora</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <NumericEdit TValue="Double" ReadOnly="true" @bind-Value="dep.Eslora"/>
+                        </FieldBody>
+                    </Field>
+                    <Field Horizontal ColumnSize="ColumnSize.Is4">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Manga</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <NumericEdit TValue="Double" ReadOnly="true" @bind-Value="dep.Manga"/>
+                        </FieldBody>
+                    </Field>
+                    <Field Horizontal ColumnSize="ColumnSize.Is3">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Localización</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit ReadOnly="true" @bind-Text="dep.Localizacion"/>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+            </Container>
+        }
+    </Container>
+}
+else
+{
+    <EmptyView/>
+}
+@code {
+
+    [Parameter]
+    public Solicitud Solicitud { get; set; }
+
+}

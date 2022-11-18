@@ -1,0 +1,126 @@
+@using Blazorise.Localization
+@using _Imports = Blazorise.SpinKit._Imports
+@inject AuthenticationStateProvider AuthStateProvider
+@inject INotificationService NotificationService
+@inject ISystemApiService SystemApiService
+@inject NavigationManager NavigationManager
+
+<Bar @bind-Visible="@_topbarVisible" Height="Height.Auto" Breakpoint="Breakpoint.Desktop" Background="Background.Primary" ThemeContrast="ThemeContrast.Light">
+    <BarBrand>
+        <BarItem>
+            <BarLink To="">
+                <BarLabel Height="Height.Is100">@AppState.ClubName</BarLabel>
+            </BarLink>
+        </BarItem>
+    </BarBrand>
+    <BarToggler />
+    <BarMenu>
+        <BarEnd>
+            <BarBrand>
+                <BarItem >
+
+                    <BarDropdown RightAligned="true">
+                        <BarDropdownToggle><BarIcon Margin="Margin.Is1.FromEnd" IconName="IconName.UserCircle" IconSize="IconSize.Large"/></BarDropdownToggle>
+                        <BarDropdownMenu>
+                            <BarDropdownItem TextColor="TextColor.Muted" Active="false" Disabled="true">Usuario: @AppState.UserName</BarDropdownItem>
+                            <BarDropdownDivider/>
+                            <BarDropdownItem Clicked="DoChangePassword">Cambiar Contraseña</BarDropdownItem>
+                            <BarDropdownItem Clicked="DoLogOut">Cerrar Sessión</BarDropdownItem>
+                        </BarDropdownMenu>
+                    </BarDropdown>
+                </BarItem>
+            </BarBrand>
+        </BarEnd>
+    </BarMenu>
+</Bar>
+
+<Modal @ref="editDialog" Shadow="Shadow.Default">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Cambio de Contraseña</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Field>
+                <FieldLabel TextColor="TextColor.Black50">Contraseña Actual</FieldLabel>
+                <TextEdit @bind-Text="_currentPassword" Role="TextRole.Password" />
+            </Field>
+            <Field>
+                <FieldLabel TextColor="TextColor.Black50">Nueva Contraseña</FieldLabel>
+                <TextEdit @bind-Text="_newPassword" Role="TextRole.Password" />
+            </Field>
+            <Field>
+                <FieldLabel TextColor="TextColor.Black50">Confirme Contraseña</FieldLabel>
+                <TextEdit @bind-Text="_passwordConfirm" Role="TextRole.Password" />
+            </Field>
+        </ModalBody>
+        <ModalFooter >
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Actualizar Contraseña</Button>    
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    bool _topbarVisible = true;
+    
+    private Modal editDialog;
+    
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+    
+    private async Task DoLogOut()
+    {
+        var myAuthStateProvider = (CustomAuthenticationProvider)AuthStateProvider;
+        await myAuthStateProvider.UpdateAuthenticationState(null);
+        NavigationManager.NavigateTo("login");
+    }
+    
+    string _currentPassword = "";
+    string _newPassword = "";
+    string _passwordConfirm = "";
+    Usuario _user;
+    
+    private async Task DoChangePassword()
+    {
+        _user = await SystemApiService.GetUsuario(AppState.UserId);
+        if (_user == null) return;
+        //
+        _currentPassword = string.Empty;
+        _newPassword = string.Empty;
+        _passwordConfirm = string.Empty;
+        await editDialog.Show();
+    }
+    bool _isBusy = false;
+    
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy= true;
+            if (_currentPassword != _user.ClaveHash)
+            {
+                await NotificationService.Error("Contraseña Actual Incorrecta");
+                return;
+            }
+            if (_newPassword != _passwordConfirm)
+            {
+                await NotificationService.Error("Contraseñas no coinciden");
+                return;
+            }
+            _user.ClaveHash = _newPassword;
+            await SystemApiService.UpdateUsuario(_user);
+            await editDialog.Hide();
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+    
+    protected override void OnParametersSet()
+    {
+        StateHasChanged();
+    }
+
+}

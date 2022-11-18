@@ -1,0 +1,33 @@
+<MainContent Title="@Title" IconName="@IconName" ToolbarContent="ToolbarItems" >
+    <ChildContent>
+        @if (_isLoading)
+        {
+            <Loading/>
+        } else 
+        {
+            @ChildContent
+        }
+    </ChildContent>
+</MainContent>
+
+@code {
+    private bool _isLoading = true;
+    [Parameter] public string Title { get; set; }
+    [Parameter] public IconName IconName { get; set; }
+    [Parameter] public RenderFragment ToolbarItems { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter] public Func<Task> LoadDataAsync { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadDataAsync();
+            _isLoading = false;
+            StateHasChanged();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}

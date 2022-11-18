@@ -1,0 +1,243 @@
+@page "/noticias"
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="Noticia" Title="Noticias" IconName="IconName.PaperPlane" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd" LoadDataAsync="LoadData">
+    <ToolbarItems>
+        <BarItem>
+            <Buttons Role="ButtonsRole.Toolbar" Border="Blazorise.Border.Rounded.Is1">
+                @if (_showGrid)
+                {
+                    <Button Background="Background.Info" Type="ButtonType.Link">
+                        <Icon Name="IconName.List" Clicked="DoShowGrid"></Icon>
+                    </Button>
+                    <Button Type="ButtonType.Link">
+                        <Icon Name="IconName.Receipt" Clicked="DoShowCards"></Icon>
+                    </Button>
+                }
+                else
+                {
+                    <Button Type="ButtonType.Link">
+                        <Icon Name="IconName.List" Clicked="DoShowGrid"></Icon>
+                    </Button>
+                    <Button Background="Background.Info" Type="ButtonType.Link">
+                        <Icon Name="IconName.Receipt" Clicked="DoShowCards"></Icon>
+                    </Button>
+                }
+            </Buttons>
+        </BarItem>
+        <BarItem>
+            <Container Margin="Margin.Is2.FromStart.Is2.FromTop" VerticalAlignment="VerticalAlignment.Middle">
+                <Check TValue="bool" Checked="_showAll" CheckedChanged="DoToogleShowAll">Ver no publicados</Check>
+            </Container>
+        </BarItem>
+    </ToolbarItems>
+    <GridSetup>
+        <GridSortSettings>
+            <GridSortColumns>
+                <GridSortColumn Field="@nameof(Noticia.Fecha)" Direction="Syncfusion.Blazor.Grids.SortDirection.Descending"></GridSortColumn>
+            </GridSortColumns>
+        </GridSortSettings>
+    </GridSetup>
+    <Columns>
+        <GridColumn HeaderText="Fecha" Field="@nameof(Noticia.Fecha)" Width="120px" Format="dd-MMM-yyyy"/>
+        <GridColumn HeaderText="Título" Field="@nameof(Noticia.Titulo)"/>
+        <GridColumn HeaderText="Resumen" Field="@nameof(Noticia.Resumen)"/>
+        <GridColumn Width="100px" HeaderText="Publicado" AllowFiltering="true" Field="@nameof(Noticia.Publicado)">
+            <Template>
+                @{
+                    var item = (context as Noticia);
+                    <Check Disabled="true" TValue="bool" @bind-Checked="@item.Publicado"/>
+                }
+    
+            </Template>
+        </GridColumn>
+    </Columns>
+    <CustomTemplate>
+        <CardDeck Padding="Padding.Is2">
+        @foreach (var item in  _dataGrid.Data)
+        {
+            <Card>
+                <CardImage Source="@item.ImagenUrl" Alt="@item.Titulo"></CardImage>
+                <CardBody>
+                    <CardTitle Size="5">
+                        <Heading Size="HeadingSize.Is5">@item.Titulo</Heading>
+                    </CardTitle>
+                    <CardSubtitle>
+                        <Container Padding="Padding.Is2.FromBottom.Is2.FromTop.Is0.FromStart">
+                            <Text TextColor="TextColor.Black50">@item.Fecha.ToString("dd MMM, yyyy")</Text>
+                        </Container>
+                    </CardSubtitle>
+                    <CardText>
+                        @item.Resumen
+                    </CardText>
+                    <Button Margin="Margin.Is0" Padding="Padding.Is1" Type="ButtonType.Link" Outline="true" Border="Blazorise.Border.Is0" Float="Float.End" Color="Color.Primary" Clicked="() => NavigationManager.NavigateTo(item.DetalleUrl)" >Ver Mas...</Button>
+                    @* <CardFooter Background="Background.Transparent" Border="Border.Is0"> *@
+                    @*          *@
+                    @* </CardFooter> *@
+                </CardBody>
+            </Card>
+        }
+        </CardDeck>
+    </CustomTemplate>
+</ListContent>
+
+<Modal @ref="editDialog" >
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nueva Noticia" : "Editando Noticia")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual">
+                <Row>
+                    <Field ColumnSize="ColumnSize.Is8">
+                        <FieldLabel TextColor="TextColor.Black50">Fecha</FieldLabel>
+                        <DateEdit @bind-Date="_editRow.Fecha" Height="Height.Is50" Placeholder="Fecha"/>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Publicar</FieldLabel>
+                        <Check TValue="bool" @bind-Checked="_editRow.Publicado" Placeholder="Publicar"/>
+                    </Field>
+                </Row>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Titulo</FieldLabel>
+                        <TextEdit @bind-Text="_editRow.Titulo" Placeholder="Título de la noticia..."/>
+                    </Field>
+                </Validation>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Resumen</FieldLabel>
+                        <MemoEdit @bind-Text="_editRow.Resumen" Placeholder="Resumen de contenido..."/>
+                    </Field>
+                </Validation>
+                <Field>
+                    <FieldLabel TextColor="TextColor.Black50">Autor</FieldLabel>
+                    <TextEdit @bind-Text="_editRow.Autor" Placeholder="Nombre del autor..."/>
+                </Field>
+                <Field>
+                    <FieldLabel TextColor="TextColor.Black50">Detalle URL</FieldLabel>
+                    <TextEdit @bind-Text="_editRow.DetalleUrl" Placeholder="Dirección web para ver mas detalles..."/>
+                </Field>
+                <Field>
+                    <FieldLabel TextColor="TextColor.Black50">Imagen URL</FieldLabel>
+                    <TextEdit @bind-Text="_editRow.ImagenUrl" Placeholder="Dirección web para la foto principal."/>
+                </Field>
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    bool _showAll = false;
+    
+    ListContent<Noticia> _dataGrid;
+    bool _isBusy = false;
+    Validations editValidator;
+    bool isCreating = false;
+    Noticia _editRow = new();
+    Modal editDialog;
+
+    private Task<List<Noticia>> LoadData()
+    {
+        return _showAll ? ApiService.GetAllNoticias(AppState.ClubKey) : ApiService.GetNoticias(AppState.ClubKey);
+    }
+    private void DoRowClicked(Noticia obj)
+    {
+        isCreating = false;
+        _editRow = obj with {};
+        editDialog.Show();
+    }
+    
+    private void DoShowAdd()
+    {
+        isCreating = true;
+        _editRow = new Noticia();
+        editDialog.Show();
+    }
+
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            await ApiService.UpsertNoticia(AppState.ClubKey, _editRow);
+            await editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+    
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemoveNoticia(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _dataGrid.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private bool _showGrid = true;
+    private void DoShowGrid(object obj)
+    {
+        _showGrid = true;
+        _dataGrid.ShowDataGrid();
+        StateHasChanged();
+    }
+    private void DoShowCards(object obj)
+    {
+        _showGrid = false;
+        _dataGrid.ShowCustomTemplate();
+        StateHasChanged();
+    }
+
+    private void DoToogleShowAll(bool arg)
+    {
+        _showAll = arg;
+        _dataGrid.ReloadData();
+    }
+
+}

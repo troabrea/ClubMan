@@ -1,0 +1,98 @@
+@page "/Preferencias"
+@inject IApiService ApiService
+@inject INotificationService NotificationService
+
+<MainContent Title="Parámetros" IconName="@IconName.Gavel">
+    @if (_empresa == null)
+    {
+        <Loading/>
+    }
+    else
+    {
+        <Validations @ref="editValidator" Mode="ValidationMode.Manual">
+            
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel TextColor="TextColor.Black50">Teléfono</FieldLabel>
+                    <TextEdit @bind-Text="_empresa.Telefono"></TextEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel TextColor="TextColor.Black50">Teléfono Adicional</FieldLabel>
+                    <TextEdit @bind-Text="_empresa.TelefonoAdicional"></TextEdit>
+                </Field>
+                 <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Whatsapp</FieldLabel>
+                        <TextEdit @bind-Text="_empresa.WhatsApp"/>
+                </Field>
+            </Fields>
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Dirección</FieldLabel>
+                    <TextEdit @bind-Text="_empresa.Direccion"/>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Correo</FieldLabel>
+                    <TextEdit @bind-Text="_empresa.Email"/>
+                </Field>
+               
+            </Fields>
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Misión</FieldLabel>
+                    <MemoEdit @bind-Text="_empresa.Mision"/>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is6">
+                    <FieldLabel TextColor="TextColor.Black50">Visión</FieldLabel>
+                    <MemoEdit @bind-Text="_empresa.Vision"/>
+                </Field>
+            </Fields>
+            
+<Fields>
+                <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel TextColor="TextColor.Black50">Youtube</FieldLabel>
+                    <TextEdit @bind-Text="_empresa.Youtube"></TextEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel TextColor="TextColor.Black50">Instagram</FieldLabel>
+                    <TextEdit @bind-Text="_empresa.Instagram"></TextEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel TextColor="TextColor.Black50">Facebook</FieldLabel>
+                    <TextEdit @bind-Text="_empresa.Facebook"></TextEdit>
+                </Field>
+            </Fields>
+
+        </Validations>
+
+        <Divider/>
+        <Button Float="Float.End" TextAlignment="TextAlignment.Center" Margin="Margin.Is2" Color="Color.Primary" Clicked="DoSaveChanges">Guardar Cambios</Button>
+    }
+</MainContent>
+
+
+@code {
+
+    Validations editValidator;
+
+
+    private Empresa _empresa;
+
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _empresa = await ApiService.GetPreferencias(AppState.ClubKey);
+            StateHasChanged();
+        }
+    }
+
+    private async Task DoSaveChanges()
+    {
+        await ApiService.UpsertPreferencias(AppState.ClubKey, _empresa);
+        await NotificationService.Success("Registro actualizado exitosamente.");
+    }
+
+}

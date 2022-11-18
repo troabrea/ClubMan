@@ -1,0 +1,79 @@
+@using System.Security.Claims
+@using Blazorise.Localization
+@inject ITextLocalizerService _textLocalizerService;
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public  RenderFragment ChildContent { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; }
+
+    [CascadingParameter]
+    private Blazorise.Theme Theme { get; set; }
+    
+    public bool IsLoggedIn { get; set; } = false;
+    public string UserName { get; set; } = string.Empty;
+    public bool IsAdmin { get; set; } = false;
+    public bool IsSystem { get; set; } = false;
+
+    public string UserId { get; set; } = string.Empty;
+    public string ClubName { get; set; } = string.Empty;
+    public string ClubKey { get; set; } = string.Empty;
+
+    public string LogoUrl { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _textLocalizerService.ChangeLanguage("es");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthenticationState;
+            IsLoggedIn = authState.User.Identity?.IsAuthenticated ?? false;
+            UserName = authState.User.Identity?.Name ?? string.Empty;
+            IsSystem = (IsLoggedIn && authState.User.IsInRole("Sistema"));
+            IsAdmin = (IsLoggedIn && authState.User.IsInRole("Administrador"));
+            UserId = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid )?.Value ?? string.Empty;
+            ClubName = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName )?.Value ?? string.Empty;
+            ClubKey = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier )?.Value ?? string.Empty;
+            if (IsLoggedIn)
+            {
+            
+                LogoUrl = authState.User.Claims.FirstOrDefault(c => c.Type == "clubman.LogoUrl")?.Value ?? string.Empty;
+            
+                var primaryColor = authState.User.Claims.FirstOrDefault(c => c.Type == "clubman.PrimaryColor")?.Value ?? string.Empty;
+                var secondaryColor = authState.User.Claims.FirstOrDefault(c => c.Type == "clubman.SecondaryColor")?.Value ?? string.Empty;
+            
+                Theme.BackgroundOptions.Primary = primaryColor;
+                Theme.TextColorOptions.Primary = primaryColor;
+                Theme.TextColorOptions.Secondary = secondaryColor;
+                Theme.ColorOptions.Primary = primaryColor;
+                Theme.ColorOptions.Secondary = secondaryColor;
+                Theme.InputOptions.CheckColor = primaryColor;
+                Theme.InputOptions.SliderColor = primaryColor;
+
+                if (Theme.BarOptions.LightColors == null)
+                {
+                    Theme.BarOptions.LightColors = new()
+                    {
+                        ItemColorOptions = new()
+                    };
+                }
+
+                Theme.BarOptions.LightColors.ItemColorOptions.ActiveBackgroundColor = Theme.White;
+                Theme.BarOptions.LightColors.ItemColorOptions.ActiveColor = primaryColor;
+            
+            
+                Theme.ThemeHasChanged();
+            }
+        }
+    }
+
+}

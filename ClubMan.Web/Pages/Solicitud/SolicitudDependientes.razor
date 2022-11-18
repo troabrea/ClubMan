@@ -1,0 +1,120 @@
+@if(Solicitud != null && Solicitud.Dependientes.Any()) {
+    <Container Margin="Margin.Is2">
+        @foreach (var dep in Solicitud.Dependientes)
+        {
+            <Card Margin="Margin.Is3.FromTop" Padding="Padding.Is3">
+                <Row>
+                    <Column ColumnSize="ColumnSize.Is2">
+                        <FigureImage Style="height: 100px;width: 100px" Source="https://st4.depositphotos.com/4329009/19956/v/450/depositphotos_199564354-stock-illustration-creative-vector-illustration-default-avatar.jpg"/>
+                    </Column>
+                    <Column ColumnSize="ColumnSize.Is10">
+                        <Fields Margin="Margin.Is1.FromTop">
+                            <Field Horizontal ColumnSize="ColumnSize.Is12">
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Tipo Dependiente</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <RadioGroup Disabled="true" TValue="TipoDependiente" @bind-CheckedValue="dep.TipoDependiente" Inline="true">
+                                        <Radio Disabled="true" ReadOnly="true" Value="@(TipoDependiente.Conyuge)">Conyuge</Radio>
+                                        <Radio Disabled="true" Value="@(TipoDependiente.Hijo)">Hijo(a)</Radio>
+                                    </RadioGroup>
+                                </FieldBody>
+                            </Field>
+                            <Field Horizontal ColumnSize="ColumnSize.Is12">
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Nombre</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <TextEdit ReadOnly="true" @bind-Text="dep.Nombre"></TextEdit>
+                                </FieldBody>
+                            </Field>
+                            <Field Horizontal ColumnSize="ColumnSize.Is12">
+                                <FieldLabel ColumnSize="ColumnSize.Is3" >Cédula / Pasaporte</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <TextEdit ReadOnly="true" @bind-Text="dep.NumeroIndentidad"></TextEdit>
+                                </FieldBody>
+                            </Field>
+                        </Fields>
+                    </Column>
+                </Row>
+                <Fields Margin="Margin.Is1.FromTop">
+                    <Field Horizontal ColumnSize="ColumnSize.Is4">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Nacimiento</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <DatePicker ReadOnly="true" DisplayFormat="dd-MMM-yyyy" @bind-Date="dep.FechaNacimiento"/>
+                        </FieldBody>
+                    </Field>
+
+                    <Field Horizontal ColumnSize="ColumnSize.Is3">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Edad</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <NumericEdit ReadOnly="true" Value="dep.Edad"/>
+                        </FieldBody>
+                    </Field>
+
+                    <Field Horizontal ColumnSize="ColumnSize.Is5">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Nacionalidad</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit ReadOnly="true" @bind-Text="dep.Nacionalidad"/>
+                        </FieldBody>
+                    </Field>
+
+                </Fields>
+                <Fields Margin="Margin.Is1.FromTop">
+                    <Field Horizontal ColumnSize="ColumnSize.Is4">
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Sexo</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <RadioGroup Disabled="true" TValue="Sexo" @bind-CheckedValue="dep.Sexo" Inline="true">
+                                <Radio Disabled="true" ReadOnly="true" Value="@(Sexo.Masculino)">M</Radio>
+                                <Radio Disabled="true" Value="@(Sexo.Femenino)">F</Radio>
+                            </RadioGroup>
+                        </FieldBody>
+                    </Field>
+
+                    <Field Horizontal ColumnSize="ColumnSize.Is4">
+                        <FieldLabel ColumnSize="ColumnSize.Is3">Celular</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is9">
+                            <TextEdit ReadOnly="true" @bind-Text="dep.Celular"/>
+                        </FieldBody>
+                    </Field>
+                    <Field Horizontal ColumnSize="ColumnSize.Is4">
+                        <FieldLabel ColumnSize="ColumnSize.Is3">Email</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is9">
+                            <TextEdit ReadOnly="true" @bind-Text="dep.Email"/>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+                @if (dep.TipoDependiente == TipoDependiente.Conyuge)
+                {
+                    <Divider DividerType="DividerType.TextContent" Text="Información Laboral"/>
+                    <Fields Margin="Margin.Is1.FromTop">
+                        <Field Horizontal ColumnSize="ColumnSize.Is8">
+                            <FieldLabel ColumnSize="ColumnSize.Is3">Lugar de Trabajo</FieldLabel>
+                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="dep.LugarTrabajo"/></FieldBody>
+                        </Field>
+                        <Field Horizontal ColumnSize="ColumnSize.Is4">
+                            <FieldLabel ColumnSize="ColumnSize.Is3">Posición</FieldLabel>
+                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="dep.Posicion"/></FieldBody>
+                        </Field>
+                    </Fields>
+                    <Fields Margin="Margin.Is1.FromTop">
+                        <Field Horizontal ColumnSize="ColumnSize.Is8">
+                            <FieldLabel ColumnSize="ColumnSize.Is3">Dirección Of.</FieldLabel>
+                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="dep.DireccionTrabajo"/></FieldBody>
+                        </Field>
+                        <Field Horizontal ColumnSize="ColumnSize.Is4">
+                            <FieldLabel ColumnSize="ColumnSize.Is5">Teléfono Of.</FieldLabel>
+                            <FieldBody ColumnSize="ColumnSize.Is7"><TextEdit ReadOnly="true" @bind-Text="dep.TelefonoTrabajo"/></FieldBody>
+                        </Field>
+                    </Fields>
+                }
+            </Card>
+        }
+    </Container>
+}
+else
+{
+    <EmptyView/>
+}
+@code {
+
+    [Parameter]
+    public Solicitud Solicitud { get; set; }
+
+}

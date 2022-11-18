@@ -1,0 +1,208 @@
+@page "/DetalleSolicitud/{SolicitudId:long}"
+@using Border = Syncfusion.Blazor.Grids.Border
+@using MouseEventArgs = Microsoft.AspNetCore.Components.Web.MouseEventArgs
+@inject INotificationService NotificationService
+@inject IApiService ApiService;
+
+<DetailContent Title="@_title" IconName="IconName.Inbox" LoadDataAsync="DoLoadSolicitudAsync">
+    <ToolbarItems>
+        @if(_solicitud != null) {
+            <Bar Mode="BarMode.Horizontal" Breakpoint="Breakpoint.Widescreen">
+                <BarMenu >
+                    <BarEnd>
+                        @if (_solicitud.EstatusSolicitud == EstatusSolicitud.Recibida || _solicitud.EstatusSolicitud == EstatusSolicitud.Pospuesto)
+                        {
+                            <BarItem>
+                                <Button Clicked="DoSubmitForReview" Loading="@isBusy" Border="Blazorise.Border.Info" Outline="true">Someter <Icon Name="IconName.Forward"></Icon></Button>
+                            </BarItem>
+                        }
+                        else
+                        {
+                            <BarItem>
+                                <Button Clicked="DoRejectReview" Loading="@isBusy" Border="Blazorise.Border.Danger" Outline="true">Rechazar <Icon Name="IconName.Delete"></Icon></Button>
+                            </BarItem>
+                            <BarItem Margin="Margin.Is1.FromStart">
+                                <Button Clicked="DoPostponeReview" Loading="@isBusy" Border="Blazorise.Border.Dark" Outline="true">Postponer <Icon Name="IconName.Clock"></Icon></Button>
+                            </BarItem>
+                            <BarItem Margin="Margin.Is1.FromStart">
+                                <Button Clicked="DoApproveReview" Loading="@isBusy" Border="Blazorise.Border.Success" Outline="true">Aprobar <Icon Name="IconName.Check"></Icon></Button>
+                            </BarItem>
+                        }
+                    </BarEnd>
+                </BarMenu>
+            </Bar>
+            
+        }
+    </ToolbarItems>
+    <ChildContent>
+        <SolicitudEncabezado Solicitud="_solicitud"/>
+        <Tabs Margin="Margin.Is1.FromTop" @bind-SelectedTab="_selectedTab">
+            <Items>
+                <Tab Name="socio">Información del Socio</Tab>
+                <Tab Name="dependientes">
+                    Dependientes
+                    <Badge Color="Color.Primary" Pill>@_solicitud.Dependientes.Count</Badge>
+                </Tab>
+                <Tab Name="referencias">
+                    Referencias
+                    <Badge Color="Color.Primary" Pill>@_solicitud.ReferenciasBancarias.Count</Badge>
+                </Tab>
+                <Tab Name="embarcaciones">
+                    Embarcaciones
+                    <Badge Color="Color.Primary" Pill>@_solicitud.Emabarcaciones.Count</Badge>
+                </Tab>
+                <Tab Name="secundadores">
+                    Secundado Por
+                    <Badge Color="Color.Primary" Pill>@_solicitud.SociosSecundadores.Count</Badge>
+                </Tab>
+                <Tab Name="otros">
+                    Otras Membresias
+                    <Badge Color="Color.Primary" Pill>@_solicitud.MembresiasAlternas.Count</Badge>
+                </Tab>
+            </Items>
+            <Content>
+                <TabPanel Name="socio">
+                    <SolicitudDatosSocio Solicitud="_solicitud"/>
+                </TabPanel>
+                <TabPanel Name="dependientes">
+                    <SolicitudDependientes Solicitud="_solicitud"/>
+                </TabPanel>
+                <TabPanel Name="referencias">
+                    <SolicitudReferencias Solicitud="_solicitud"/>
+                </TabPanel>
+                <TabPanel Name="embarcaciones">
+                    <SolicitudEmbarcaciones Solicitud="_solicitud"/>
+                </TabPanel>
+                <TabPanel Name="secundadores">
+                    <SolicitudSecundadores Solicitud="_solicitud"/>
+                </TabPanel>
+                <TabPanel Name="otros">
+                    <SolicitudOtrasMembresias Solicitud="_solicitud"/>
+                </TabPanel>
+
+            </Content>
+        </Tabs>
+    </ChildContent>
+</DetailContent>
+
+<SolicitudReviewResult @ref="_reviewDialog"></SolicitudReviewResult>
+
+@code {
+
+    SolicitudReviewResult _reviewDialog;
+    
+    string _selectedTab = "socio";
+    string _title = "Detalle Solicitud";
+    
+    [CascadingParameter] public AppState AppState { get; set; }
+    [Parameter] public long SolicitudId { get; set; }
+    Solicitud _solicitud;
+
+    private async Task DoLoadSolicitudAsync()
+    {
+        _solicitud = await ApiService.GetSolicitud(AppState.ClubKey, SolicitudId);
+        _title = $"Detalle Solicitud - {_solicitud.Id} - {_solicitud.EstatusSolicitud}";
+        StateHasChanged();
+    }
+
+    private bool isBusy;
+    private async Task DoSubmitForReview(MouseEventArgs arg)
+    {
+        if (isBusy) return;
+        try
+        {
+            isBusy = true;
+            _solicitud = await ApiService.SubmitSolicitud(AppState, SolicitudId);
+            StateHasChanged();            
+            await NotificationService.Success("La solicitud ha sido sometienda para revisión", "Información");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrido un error sometiendo la solicitud para revisión", "Alerta");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task DoRejectReview(MouseEventArgs arg)
+    {
+        if (isBusy) return;
+        try
+        {
+            isBusy = true;
+
+            var review =new Revision() {
+                FechaRevision = DateTime.Today
+            };
+
+            await _reviewDialog.ShowAsync(_solicitud, ReviewForm.Reject, review, async (rev) =>
+            {
+                await ApiService.RejectReview(AppState, SolicitudId, rev);
+                _solicitud = await ApiService.GetSolicitud(AppState.ClubKey, SolicitudId);
+                StateHasChanged();            
+                await NotificationService.Success("El rechazo de la solicutud fue grabado exitosamente.", "Información");
+            });
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrido un error grabando el resultado de la revisión", "Alerta");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+    private async Task DoPostponeReview(MouseEventArgs arg)
+    {
+        if (isBusy) return;
+        try
+        {
+            isBusy = true;
+
+            var review =new Revision() {
+                FechaRevision = DateTime.Today
+            };
+            
+            await _reviewDialog.ShowAsync(_solicitud, ReviewForm.Postpone, review, async (rev) =>
+            {
+                await ApiService.PostponeReview(AppState, SolicitudId, rev);
+                _solicitud = await ApiService.GetSolicitud(AppState.ClubKey, SolicitudId);
+                StateHasChanged();            
+                await NotificationService.Success("La posposición de la solicutud fue grabada exitosamente.", "Información");
+            });
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrido un error grabando el resultado de la revisión", "Alerta");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+    private async Task DoApproveReview(MouseEventArgs arg)
+    {
+        if (isBusy) return;
+        try
+        {
+            isBusy = true;
+            // _solicitud = await ApiService.ApproveReview(AppState, SolicitudId);
+            StateHasChanged();            
+            await NotificationService.Success("La solicitud ha sido sometienda para revisión", "Información");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrido un error sometiendo la solicitud para revisión", "Alerta");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+}
