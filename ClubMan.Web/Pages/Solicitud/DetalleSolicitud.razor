@@ -1,8 +1,10 @@
 @page "/DetalleSolicitud/{SolicitudId:long}"
 @using Border = Syncfusion.Blazor.Grids.Border
-@using MouseEventArgs = Microsoft.AspNetCore.Components.Web.MouseEventArgs
+@inject IMessageService MessageService
+@inject NavigationManager NavigationManager
 @inject INotificationService NotificationService
 @inject IApiService ApiService;
+@inject IJSRuntime jsRuntime
 
 <DetailContent Title="@_title" IconName="IconName.Inbox" LoadDataAsync="DoLoadSolicitudAsync">
     <ToolbarItems>
@@ -10,13 +12,17 @@
             <Bar Mode="BarMode.Horizontal" Breakpoint="Breakpoint.Widescreen">
                 <BarMenu >
                     <BarEnd>
+                        <BarItem>
+                            <Button Outline="true" Clicked="DoOpenPdf">Ver PDF</Button>
+                        </BarItem>
+
                         @if (_solicitud.EstatusSolicitud == EstatusSolicitud.Recibida || _solicitud.EstatusSolicitud == EstatusSolicitud.Pospuesto)
                         {
                             <BarItem>
                                 <Button Clicked="DoSubmitForReview" Loading="@isBusy" Border="Blazorise.Border.Info" Outline="true">Someter <Icon Name="IconName.Forward"></Icon></Button>
                             </BarItem>
                         }
-                        else
+                        else if(_solicitud.EstatusSolicitud == EstatusSolicitud.Sometida)
                         {
                             <BarItem>
                                 <Button Clicked="DoRejectReview" Loading="@isBusy" Border="Blazorise.Border.Danger" Outline="true">Rechazar <Icon Name="IconName.Delete"></Icon></Button>
@@ -49,7 +55,7 @@
                 </Tab>
                 <Tab Name="embarcaciones">
                     Embarcaciones
-                    <Badge Color="Color.Primary" Pill>@_solicitud.Emabarcaciones.Count</Badge>
+                    <Badge Color="Color.Primary" Pill>@_solicitud.Embarcaciones.Count</Badge>
                 </Tab>
                 <Tab Name="secundadores">
                     Secundado Por
@@ -59,6 +65,13 @@
                     Otras Membresias
                     <Badge Color="Color.Primary" Pill>@_solicitud.MembresiasAlternas.Count</Badge>
                 </Tab>
+                @if (_solicitud.EstatusSolicitud != EstatusSolicitud.Recibida)
+                {
+                    <Tab Name="revisiones">
+                        Revisiones
+                        <Badge Color="Color.Warning" Pill>@_solicitud.Revisiones.Count</Badge>
+                    </Tab>
+                }
             </Items>
             <Content>
                 <TabPanel Name="socio">
@@ -79,7 +92,12 @@
                 <TabPanel Name="otros">
                     <SolicitudOtrasMembresias Solicitud="_solicitud"/>
                 </TabPanel>
-
+                 @if (_solicitud.EstatusSolicitud != EstatusSolicitud.Recibida)
+                {
+                    <TabPanel Name="revisiones">
+                        <SolicitudRevisiones Solicitud="_solicitud"/>
+                    </TabPanel>
+                }
             </Content>
         </Tabs>
     </ChildContent>
@@ -87,9 +105,12 @@
 
 <SolicitudReviewResult @ref="_reviewDialog"></SolicitudReviewResult>
 
+
 @code {
 
     SolicitudReviewResult _reviewDialog;
+
+    Modal _pdfViewer;
     
     string _selectedTab = "socio";
     string _title = "Detalle Solicitud";
@@ -106,15 +127,20 @@
     }
 
     private bool isBusy;
-    private async Task DoSubmitForReview(MouseEventArgs arg)
+    private async Task DoSubmitForReview()
     {
         if (isBusy) return;
+        if ( !await MessageService.Confirm( "Seguro que desea someter esta solicitud para su evaluación?", "Confirme" ) )
+        {
+            return;
+        }
         try
         {
             isBusy = true;
             _solicitud = await ApiService.SubmitSolicitud(AppState, SolicitudId);
             StateHasChanged();            
             await NotificationService.Success("La solicitud ha sido sometienda para revisión", "Información");
+            NavigationManager.NavigateTo("/Solicitudes");
         }
         catch (Exception e)
         {
@@ -127,7 +153,7 @@
         }
     }
 
-    private async Task DoRejectReview(MouseEventArgs arg)
+    private async Task DoRejectReview()
     {
         if (isBusy) return;
         try
@@ -144,6 +170,7 @@
                 _solicitud = await ApiService.GetSolicitud(AppState.ClubKey, SolicitudId);
                 StateHasChanged();            
                 await NotificationService.Success("El rechazo de la solicutud fue grabado exitosamente.", "Información");
+                NavigationManager.NavigateTo("/Solicitudes");
             });
         }
         catch (Exception e)
@@ -156,7 +183,7 @@
             isBusy = false;
         }
     }
-    private async Task DoPostponeReview(MouseEventArgs arg)
+    private async Task DoPostponeReview()
     {
         if (isBusy) return;
         try
@@ -173,6 +200,7 @@
                 _solicitud = await ApiService.GetSolicitud(AppState.ClubKey, SolicitudId);
                 StateHasChanged();            
                 await NotificationService.Success("La posposición de la solicutud fue grabada exitosamente.", "Información");
+                NavigationManager.NavigateTo("/Solicitudes");
             });
         }
         catch (Exception e)
@@ -185,24 +213,41 @@
             isBusy = false;
         }
     }
-    private async Task DoApproveReview(MouseEventArgs arg)
+    private async Task DoApproveReview()
     {
         if (isBusy) return;
         try
         {
             isBusy = true;
-            // _solicitud = await ApiService.ApproveReview(AppState, SolicitudId);
-            StateHasChanged();            
-            await NotificationService.Success("La solicitud ha sido sometienda para revisión", "Información");
+
+            var review =new Revision() {
+                FechaRevision = DateTime.Today
+            };
+
+            await _reviewDialog.ShowAsync(_solicitud, ReviewForm.Approve, review, async (rev) =>
+            {
+                await ApiService.ApproveReview(AppState, SolicitudId, rev);
+                _solicitud = await ApiService.GetSolicitud(AppState.ClubKey, SolicitudId);
+                StateHasChanged();            
+                await NotificationService.Success("La aprobación de la solicutud fue grabada exitosamente y se ha creado la nueva membresía.", "Información");
+                NavigationManager.NavigateTo("/Socios");
+            });
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            await NotificationService.Error("Ha ocurrido un error sometiendo la solicitud para revisión", "Alerta");
+            await NotificationService.Error("Ha ocurrido un error grabando el resultado de la revisión", "Alerta");
         }
         finally
         {
             isBusy = false;
         }
     }
+
+    private async Task DoOpenPdf()
+    {
+        string url = _solicitud.SolicitudPdfUrl;
+        await jsRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
+
 }

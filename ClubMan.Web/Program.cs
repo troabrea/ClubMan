@@ -42,6 +42,7 @@ builder.Services.AddScoped<ProtectedSessionStorage>();
 
 builder.Services.AddScoped<ISystemApiService, SystemApiService>();
 builder.Services.AddScoped<IApiService, ApiService>();
+builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
 
 builder.Services.AddBlazorise(options =>
     {

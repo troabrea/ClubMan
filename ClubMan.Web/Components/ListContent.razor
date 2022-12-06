@@ -21,10 +21,11 @@
                         AllowGrouping="false"
                         AllowExcelExport="true"
                         AllowPdfExport="true"
+                        AllowTextWrap="true"
                         ShowColumnChooser="false"
                         ShowColumnMenu="false"
                         AllowPaging="true">
-                    <GridFilterSettings Type="FilterType.Excel"/>
+                    <GridFilterSettings Type="FilterType.Excel" ShowFilterBarStatus="true" />
                     <GridSelectionSettings CheckboxOnly="true"></GridSelectionSettings>
                     <GridPageSettings PageSize="10" PageSizes="_pageSize"/>
                     @GridSetup
@@ -34,7 +35,7 @@
                     <GridEvents TValue="TItem" OnRecordClick="OnRecordClick" OnToolbarClick="OnToolbarClicked"></GridEvents>
                     <GridTemplates>
                         <ToolbarTemplate>
-                            <ListToolPanel ToolbarItems="@ToolbarItems" FilterModel="FilterModel" OnAddRecord="OnAddButtonClicked" OnRefresh="LoadInitialData" OnExport="DoExport"/>
+                            <ListToolPanel ToolbarItems="@ToolbarItems" OnSearch="async (searchTerm) => await _grid.SearchAsync(searchTerm)" FilterModel="FilterModel" OnAddRecord="OnAddButtonClicked" OnRefresh="LoadInitialData" OnExport="DoExport"/>
                         </ToolbarTemplate>
                     </GridTemplates>
 

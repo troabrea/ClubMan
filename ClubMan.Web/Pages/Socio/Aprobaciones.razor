@@ -1,0 +1,133 @@
+@page "/Aprobaciones"
+@using ClubMan.Shared.Events
+@inject NavigationManager NavigationManager
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+<ListContent @ref="listContent" IconName="IconName.Inbox" TItem="MovimientoSocio" 
+             LoadDataAsync="() => ApiService.GetAprobacionesPendientes(AppState.ClubKey)"
+             OnRowClicked="OnRowClicked"
+             Title="Aprobaciones Pendientes">
+    <Columns>
+        <GridColumn Field="FechaRegistro" Width="120px" HeaderText="Fecha" Format="dd-MMM-yyyy"></GridColumn>
+        <GridColumn Field="Nota" HeaderText="Nota"  />
+        <GridColumn Field="Estatus" Width="120px" HeaderText="Estatus"></GridColumn>
+    </Columns>
+</ListContent>
+
+@if (showDialog)
+{
+    <Modal @bind-Visible="showDialog" Closed="() => _movimiento = new()">
+        <ModalContent Size="ModalSize.ExtraLarge">
+            <ModalHeader>
+                <Heading Size="HeadingSize.Is5" TextColor="TextColor.Primary">@_title</Heading>
+                <Addons>
+                    <Addon AddonType="AddonType.Start">
+                        <Button Color="Color.Success" Clicked="DoApproveMovimiento">Aprobar</Button>
+                    </Addon>
+                    <Addon AddonType="AddonType.Body">
+                        <TextEdit Placeholder="Comentario" @bind-Text="_comentario"/>
+                    </Addon>
+                    <Addon AddonType="AddonType.End">
+                        <Button Color="Color.Danger" Clicked="DoRejectMovimiento">Rechazar</Button>
+                    </Addon>
+                </Addons>
+                
+            </ModalHeader>
+            <ModalBody>
+                @{
+                    var tab = "adicionales";
+                    @if (_movimiento.TipoMovimiento == TipoMovimiento.AgregarDependiente || _movimiento.TipoMovimiento == TipoMovimiento.QuitarDependiente)
+                    {
+                        tab = "dependientes";
+                    } else if (_movimiento.TipoMovimiento == TipoMovimiento.SolicitarActividad)
+                    {
+                        tab = "eventos";
+                    }
+                }
+                <PerfilSocio SocioId="_socioId" SelectedTab="@tab"></PerfilSocio>
+            </ModalBody>
+        </ModalContent>
+    </Modal>
+}
+
+@code
+{
+    bool showDialog;
+    long _socioId = -1;
+    string _title;
+    string _comentario;
+
+    ListContent<MovimientoSocio> listContent;
+    
+    MovimientoSocio _movimiento;
+    
+    [CascadingParameter] 
+    public AppState AppState { get; set; }
+    private void OnRowClicked(MovimientoSocio mov)
+    {
+        _socioId = mov.SocioId;
+        _movimiento = mov with{};
+        _comentario = string.Empty;
+        _title = mov.TipoDeMovimiento;
+        showDialog = true;
+        StateHasChanged();
+    }
+
+    private async Task DoApproveMovimiento()
+    {
+        if (isBusy) return;
+        try
+        {
+            isBusy = true;
+            var evento = new ProcesaMovimientoEvent(_movimiento.Id, AppState.UserName, EstatusMovimiento.Aprobado, _comentario);
+            await ApiService.ProcesaMovimento(AppState.ClubKey, evento);
+    //
+            NotificationService.Success("Aprobación de solicitud grabado exitosamente.", "Alerta");
+            showDialog = false;
+            StateHasChanged();
+            listContent.ReloadData();
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            NotificationService.Error("Ha ocurrido un error actualizando la aprobación.", "Alerta");
+        }
+        finally
+        {
+            isBusy = true;
+        }
+    }
+
+    bool isBusy;
+    private async Task DoRejectMovimiento()
+    {
+        if (String.IsNullOrEmpty(_comentario))
+        {
+            await NotificationService.Warning("Debe especificar un comentario para poder rechazar este movimiento.", "Aviso");
+            return;
+        }
+        if (isBusy) return;
+        try
+        {
+            isBusy = true;
+            var evento = new ProcesaMovimientoEvent(_movimiento.Id, AppState.UserName, EstatusMovimiento.Rechazado, _comentario);
+            await ApiService.ProcesaMovimento(AppState.ClubKey, evento);
+            //
+            NotificationService.Success("Rechazo de solicitud grabado exitosamente.", "Alerta");
+            showDialog = false;
+            StateHasChanged();
+            listContent.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            NotificationService.Error("Ha ocurrido un error actualizando la aprobación.", "Alerta");
+        }
+        finally
+        {
+            isBusy = true;
+        }
+    }
+}

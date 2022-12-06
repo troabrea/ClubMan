@@ -27,6 +27,12 @@ public enum TipoDependiente
     Hijo
 }
 
+public enum TipoAdicional
+{
+    Empleado,
+    Otro
+}
+
 public enum EstatusSolicitud
 {
     Recibida,
@@ -35,11 +41,73 @@ public enum EstatusSolicitud
     Rechazado,
     Pospuesto
 }
-
+public enum EstatusEvento
+{
+    Recibido,
+    Sometido,
+    Aprobado,
+    Rechazado
+}
 public enum EstatusRevision
 {
     Pendiente,
     Aprobado,
     Rechazado,
     Pospuesto
+}
+
+public enum EstatusMembresia
+{
+    Activa,
+    Pasiva,
+    NoResidente,
+    Bloqueada,
+    Cancelada,
+}
+
+public enum TipoMovimiento
+{
+    CambiarAPasiva,
+    ReActivar,
+    BloquearEntrada,
+    MarcarComoNoResidente,
+    CancelarMembresia,
+    AgregarDependiente,
+    QuitarDependiente,
+    AgregarAdicional,
+    QuitarAdicional,
+    SolicitarHuesped,
+    SolicitarActividad,
+    SolicitarInvitadoExtraordinario
+}
+
+public enum EstatusMovimiento
+{
+    Pendiente,
+    Aprobado,
+    Rechazado
+}
+
+public enum EstatusDependiente
+{
+    Pendiente,
+    Activo,
+    Bloqueado,
+    Cancelado
+}
+
+public enum EstatusCarnet
+{
+    Activo,
+    Bloqueado,
+    Expirado,
+    Cancelado
+}
+
+public enum TipoCarnet
+{
+    Principal,
+    Dependiente,
+    Huesped,
+    Adicional
 }

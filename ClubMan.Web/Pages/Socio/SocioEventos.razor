@@ -1,0 +1,283 @@
+@inject IApiService ApiService
+@inject IMessageService MessageService
+@inject INotificationService NotificationService
+
+@if(Socio != null && _eventos != null) {
+    <DataGrid TItem="EventoViewModel" Data="@_eventos"
+              CommandMode="DataGridCommandMode.ButtonRow"
+              Filterable="false"
+              FilterMethod="DataGridFilterMethod.Contains"
+              ShowPager="true"
+              ShowPageSizes="false"
+              RowClicked="EventoClicked"
+              PageSize="10"
+              RowSelectable="(r) => false">
+        <DataGridColumns>
+            <DataGridColumn Field="Id" Caption="Id" SortDirection="Blazorise.SortDirection.Ascending"/>
+            <DataGridColumn Field="Instalacion.Titulo" Caption="Lugar"/>
+            <DataGridColumn Field="Evento.Descripcion" Caption="Descripción"/>
+            <DataGridColumn Field="Evento.FechaHora" Caption="Fecha y Hora">
+                <DisplayTemplate>
+                @{
+                    var item = (context as EventoViewModel);
+                    <Label>@item.Evento.FechaHora.ToString("dd-MMM-yyyy")</Label>
+                    <br/>
+                    <Label>@item.Evento.FechaHora.ToString("hh:mm tt") - @item.Evento.FechaHora.AddHours(item.Evento.Horas).ToString("hh:mm tt")</Label>
+                }
+                </DisplayTemplate>
+            </DataGridColumn>
+            <DataGridColumn Field="Evento.Estatus" Caption="Estatus"/>
+        </DataGridColumns>
+        <EmptyTemplate>
+            <EmptyView/>
+        </EmptyTemplate>
+        <ButtonRowTemplate>
+            <Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="DoShowAdd">
+                <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+            </Button>
+        </ButtonRowTemplate>
+    </DataGrid>
+}
+else
+{
+    <EmptyView/>
+}
+
+
+<Modal @ref="editDialog" Width="Width.Max100" Closed="async () => await editValidator.ClearAll()">
+    <ModalContent Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nuevo Evento" : "Editando Evento")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual" Model="_editRow" >
+                
+                <Fields>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Fecha</FieldLabel>
+                        <FieldBody>
+                            <DatePicker TValue="DateTime"  @bind-Date="Fecha">
+                                <Feedback><ValidationError/></Feedback>
+                            </DatePicker>
+                        </FieldBody>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Hora</FieldLabel>
+                        <FieldBody>
+                            <TimePicker TValue="TimeSpan"  @bind-Time="Hora">
+                                <Feedback><ValidationError/></Feedback>
+                            </TimePicker>
+                        </FieldBody>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Duración</FieldLabel>
+                        <FieldBody>
+                            <NumericEdit TValue="Int32" @bind-Value="_editRow.Horas" Min="1" Max="12">
+                                <Feedback><ValidationError/></Feedback>
+                            </NumericEdit>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+                <Field>
+                    <FieldLabel ColumnSize="ColumnSize.Is12" TextColor="TextColor.Black50">Área</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is12">
+                        <SelectList TabIndex="1" TItem="InstalacionViewModel" TValue="Guid"
+                                    TextField="@((item) => item.Instalacion.Titulo)"
+                                    ValueField="@((item) => item.Instalacion.Id)"
+                                    Data="_instalaciones"
+                                    @bind-SelectedValue="_editRow.InstalacionId"
+                                    DefaultItemText="Seleccione Área"/>
+                    </FieldBody>
+                </Field>
+                <Fields>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field ColumnSize="ColumnSize.Is8">
+                            <FieldLabel TextColor="TextColor.Black50">Descripción</FieldLabel>
+                            <FieldBody>
+                                <TextEdit @bind-Text="_editRow.Descripcion">
+                                    <Feedback><ValidationError/></Feedback>
+                                </TextEdit>
+                            </FieldBody>
+                        </Field>
+                    </Validation>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Invitados</FieldLabel>
+                        <FieldBody>
+                            <NumericEdit TValue="Int32" @bind-Value="_editRow.Personas" Min="1" Max="150">
+                                <Feedback><ValidationError/></Feedback>
+                            </NumericEdit>
+                        </FieldBody>
+                    </Field>                    
+                </Fields>
+            </Validations>
+            <Divider Text="Invitados"></Divider>
+            <SfGrid Height="150px" DataSource="@_editRow.Invitados" Toolbar="@(new List<string>() { "Add", "Edit", "Delete", "Cancel", "Update" })">
+                <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Normal"></GridEditSettings>
+                <GridColumns>
+                    <GridColumn Field=@nameof(InvitadoEvento.NumeroIdentidad) HeaderText="Número Indentidad" IsPrimaryKey="true"ValidationRules="@(new Syncfusion.Blazor.Grids.ValidationRules{ Required=true})"  Width="200" ></GridColumn>
+                    <GridColumn Field=@nameof(InvitadoEvento.Nombre) HeaderText="Nombre" ValidationRules="@(new Syncfusion.Blazor.Grids.ValidationRules{ Required=true})"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </ModalBody>
+        <ModalFooter >
+            @if (_editRow.Estatus == EstatusEvento.Recibido || _editRow.Estatus == EstatusEvento.Rechazado)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Info" Loading="@_isBusy" Clicked="@DoSaveAndSubmit">Grabar y Someter</Button>   
+            }
+            @if (!isCreating)
+            {
+                @if (_editRow.Estatus == EstatusEvento.Recibido)
+                {
+                    <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+                }
+                @if (_editRow.Estatus == EstatusEvento.Aprobado && _editRow.FechaHora.Date >= DateTime.Today)
+                {
+                    <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Cancelar Evento</Button>
+                }
+                @if (_editRow.Estatus == EstatusEvento.Rechazado)
+                {
+                    <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Cancelar Evento</Button>
+                }
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+
+    bool _isBusy = false;
+    Validations editValidator;
+    bool isCreating = false;
+    EventoDeSocio _editRow = new();
+    Modal editDialog;
+    
+    
+    [CascadingParameter] public AppState AppState { get; set; }
+    [Parameter]
+    public Socio Socio { get; set; }
+
+    List<EventoViewModel> _eventos = new();
+    List<InstalacionViewModel> _instalaciones;
+    
+    private DateTime Fecha { get; set; }
+    private TimeSpan Hora { get; set; }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_instalaciones == null)
+        {
+            _instalaciones = await ApiService.GetInstalaciones(AppState.ClubKey);
+        }
+        _eventos = await ApiService.GetEventos(AppState.ClubKey, Socio.Id);
+
+    }
+    private async Task DoSaveAndSubmit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            _editRow.FechaHora = Fecha.AddHours(Hora.TotalHours);
+            await ApiService.UpsertEvento(AppState.ClubKey, _editRow);
+            await ApiService.SometerEvento(AppState, _editRow);
+            await editDialog.Hide();
+            _eventos = await ApiService.GetEventos(AppState.ClubKey, Socio.Id);
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+    
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            _editRow.FechaHora = Fecha.AddHours(Hora.TotalHours);
+            await ApiService.UpsertEvento(AppState.ClubKey, _editRow);
+            await editDialog.Hide();
+            _eventos = await ApiService.GetEventos(AppState.ClubKey, Socio.Id);
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemoveEvento(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _eventos = await ApiService.GetEventos(AppState.ClubKey, Socio.Id);
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+    
+    private void DoShowAdd()
+    {
+        isCreating = true;
+        _editRow = new EventoDeSocio();
+        _editRow.SocioId = Socio.Id;
+        Fecha = _editRow.FechaHora.Date;
+        Hora = _editRow.FechaHora.Date.AddHours(10).Subtract(_editRow.FechaHora.Date);
+        editDialog.Show();
+    }
+
+    private void EventoClicked(DataGridRowMouseEventArgs<EventoViewModel> arg)
+    {
+        isCreating = false;
+        _editRow = arg.Item.Evento with {};
+        Fecha = _editRow.FechaHora.Date;
+        Hora = _editRow.FechaHora.Subtract(_editRow.FechaHora.Date);
+        editDialog.Show();
+    }
+
+}

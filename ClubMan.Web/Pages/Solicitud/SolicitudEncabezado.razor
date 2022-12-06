@@ -1,8 +1,11 @@
+@inject IApiService ApiService
 @using Border = Blazorise.Border
 <Container  Border="Border.Rounded" Background="Background.Light" Padding="Padding.Is2.FromStart.Is2.FromEnd.Is2.FromTop.Is0.FromBottom">
     <Row>
         <Column ColumnSize="ColumnSize.Is2">
-            <FigureImage Style="height: 100px;width: 100px" Source="https://st4.depositphotos.com/4329009/19956/v/450/depositphotos_199564354-stock-illustration-creative-vector-illustration-default-avatar.jpg"/>
+            <Button Clicked="OnPickPhoto">
+                <FigureImage @ref="photoImage" Style="height: 100px;width: 100px" Source="@_photoUrl"/>
+            </Button>
         </Column>
         <Column ColumnSize="ColumnSize.Is10">
             <Fields Margin="Margin.Is2.FromTop">
@@ -46,6 +49,34 @@
     </Fields>
 </Container>
 
+<PhotoPicker @ref="_photoPicker" Title="Foto Principal"></PhotoPicker>
+
 @code {
+    [CascadingParameter] public AppState AppState { get; set; }
     [Parameter] public Solicitud Solicitud { get; set; }
+
+    PhotoPicker _photoPicker;
+    FigureImage photoImage;
+    String _photoUrl = "/nophoto.jpg";
+
+    protected override void OnParametersSet()
+    {
+        if (!String.IsNullOrEmpty(Solicitud?.FotoSocioUrl))
+        {
+            _photoUrl = Solicitud.FotoSocioUrl;
+            StateHasChanged();
+        }
+        base.OnParametersSet();
+    }
+
+    private void OnPickPhoto()
+    {
+        _photoPicker.Show(async (url) =>
+        {
+            Solicitud = await ApiService.UpdateSolicitudMainPhoto(AppState, Solicitud.Id, url);
+            _photoUrl = url;
+            StateHasChanged();
+        });
+    }
+
 }

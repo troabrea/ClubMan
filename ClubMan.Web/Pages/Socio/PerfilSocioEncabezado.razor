@@ -1,0 +1,76 @@
+@inject IApiService ApiService
+@using Border = Blazorise.Border
+<Container  Border="Border.Rounded" Background="Background.Light" Padding="Padding.Is2.FromStart.Is2.FromEnd.Is2.FromTop.Is0.FromBottom">
+    <Row>
+        <Column ColumnSize="ColumnSize.Is2">
+            <FigureImage Style="height: 100px;width: 100px" Source="@_photoUrl"/>
+        </Column>
+        <Column ColumnSize="ColumnSize.Is10">
+            <Fields Margin="Margin.Is2.FromTop">
+                <Field ColumnSize="ColumnSize.Is3">
+                    <FieldLabel>Carnet No.</FieldLabel>
+                    <FieldBody><TextEdit ReadOnly="true" @bind-Text="Socio.NumeroCarnet"/></FieldBody>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is3">
+                    <FieldLabel>Socio desde</FieldLabel>
+                    <FieldBody><DatePicker ReadOnly="true" DisplayFormat="dd-MMM-yyyy" TValue="DateTime" @bind-Date="Socio.FechaMembresia"/></FieldBody>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is3">
+                    <FieldLabel >Tipo Socio</FieldLabel>
+                    <FieldBody>
+                        <TextEdit ReadOnly="true" Text="@Socio.TipoDeSocio"/>
+                    </FieldBody>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is3">
+                    <FieldLabel>Estatus</FieldLabel>
+                    <FieldBody>
+                        @if (Socio.EstatusMembresia == EstatusMembresia.Activa || Socio.EstatusMembresia == EstatusMembresia.NoResidente)
+                        {
+                            <Heading Size="HeadingSize.Is5" TextColor="TextColor.Success">@Socio.EstatusMembresia</Heading>
+                        }
+                        else
+                        {
+                            <Heading Size="HeadingSize.Is5" TextColor="TextColor.Danger">@Socio.EstatusMembresia</Heading>
+                        }
+                    </FieldBody>
+                </Field>
+            </Fields>
+        </Column>
+
+    </Row>
+    <Fields>
+        <Field ColumnSize="ColumnSize.Is6">
+            <FieldLabel TextOverflow="Blazorise.TextOverflow.NoWrap">Nombre</FieldLabel>
+            <FieldBody >
+                <TextEdit ReadOnly="true" @bind-Text="Socio.Nombre"/>
+            </FieldBody>
+        </Field>
+        <Field ColumnSize="ColumnSize.Is6">
+            <FieldLabel TextOverflow="Blazorise.TextOverflow.NoWrap">Empresa</FieldLabel>
+            <FieldBody >
+                <TextEdit ReadOnly="true" @bind-Text="Socio.Empresa"/>
+            </FieldBody>
+        </Field>
+    </Fields>
+</Container>
+
+<PhotoPicker Title="Foto Principal"></PhotoPicker>
+
+@code {
+    [CascadingParameter] public AppState AppState { get; set; }
+    [Parameter] public Socio Socio { get; set; }
+
+    String _photoUrl = "/nophoto.jpg";
+
+    protected override void OnParametersSet()
+    {
+        if (!String.IsNullOrEmpty(Socio?.FotoUrl))
+        {
+            _photoUrl = Socio.FotoUrl;
+            StateHasChanged();
+        }
+        base.OnParametersSet();
+    }
+
+
+}

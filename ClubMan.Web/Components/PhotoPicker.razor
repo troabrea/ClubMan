@@ -1,0 +1,51 @@
+@inject ICloudStorageService CloudStorageService
+@inject INotificationService NotificationService
+
+<Modal @ref="_pickDialog">
+    <ModalContent Size="ModalSize.Default">
+    <ModalHeader>@Title</ModalHeader>
+    <ModalBody>
+        <FilePicker @ref="_filePicker" Multiple="false" Filter="*.png;*.jpg;*.jpeg" Upload="OnFileUpload"></FilePicker>
+    </ModalBody>
+    </ModalContent>
+</Modal>
+
+
+@code {
+
+    FilePicker _filePicker;
+    
+    [Parameter] public string Title { get; set; }
+    
+    Modal _pickDialog;
+    Action<String> _onFileUploaded { get; set; }
+
+    public void Show(Action<String> onFileUploaded)
+    {
+        _onFileUploaded = onFileUploaded;
+        _pickDialog.Show();
+    }
+    
+    private async Task OnFileUpload(FileUploadEventArgs arg)
+    {
+        try
+        {
+            var photoUrl = string.Empty;
+            using (MemoryStream result = new MemoryStream())
+            {
+                await arg.File.OpenReadStream( long.MaxValue ).CopyToAsync( result ) ;
+                photoUrl = await CloudStorageService.StoreBlob(Guid.NewGuid().ToString() + "_" + arg.File.Name, result);
+                _filePicker.Clear();
+                //
+                await _pickDialog.Hide();
+                _onFileUploaded?.Invoke(photoUrl);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrido un error importando solicitud.", "Alerta");
+        }
+    }
+    
+}

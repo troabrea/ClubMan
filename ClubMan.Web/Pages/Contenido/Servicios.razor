@@ -4,11 +4,11 @@
 
 <ListContent @ref="_dataGrid" TItem="Servicio" Title="Servicios" IconName="IconName.PaperPlane" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd"  LoadDataAsync="() => ApiService.GetServicios(AppState.ClubKey)">
     <Columns>
-        <GridColumn Width="60px" HeaderText="Orden" Field="@nameof(Servicio.Orden)" />
+        <GridColumn Width="110px" HeaderText="Orden" Field="@nameof(Servicio.Orden)" />
         <GridColumn HeaderText="Título" Field="@nameof(Servicio.Titulo)"/>
         <GridColumn HeaderText="Categoría" Field="@nameof(Servicio.Categoria)"/>
         <GridColumn HeaderText="Horario" Field="@nameof(Servicio.Horario)"/>
-        <GridColumn Width="80px" HeaderText="Publicado" AllowFiltering="false" Field="@nameof(Servicio.Publicado)">
+        <GridColumn Width="120px" HeaderText="Publicado" AllowFiltering="false" Field="@nameof(Servicio.Publicado)">
             <Template>
                 @{
                     var item = (context as Servicio);

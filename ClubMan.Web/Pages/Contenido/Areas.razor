@@ -14,8 +14,8 @@
         </GridColumn>
         <GridColumn HeaderText="Area" Field="Instalacion.Titulo"></GridColumn>
         <GridColumn HeaderText="Nombre" Field="Localidad.Nombre"></GridColumn>
-        <GridColumn Width="100px" TextAlign="TextAlign.Center" HeaderText="Capacidad" Field="Instalacion.Capacidad"/>
-        <GridColumn Width="100px" TextAlign="TextAlign.Center" HeaderText="Reservable" Field="Instalacion.Reservable">
+        <GridColumn Width="140px" TextAlign="TextAlign.Center" HeaderText="Capacidad" Field="Instalacion.Capacidad"/>
+        <GridColumn Width="130px" TextAlign="TextAlign.Center" HeaderText="Reserva" Field="Instalacion.Reservable">
             <Template>
                  @{
                      var item = (context as InstalacionViewModel);
@@ -23,7 +23,7 @@
                  }
             </Template>
         </GridColumn>
-        <GridColumn Width="100px" TextAlign="TextAlign.Center" HeaderText="Activo" Field="Instalacion.Activo">
+        <GridColumn Width="120px" TextAlign="TextAlign.Center" HeaderText="Activo" Field="Instalacion.Activo">
             <Template>
                  @{
                      var item = (context as InstalacionViewModel);

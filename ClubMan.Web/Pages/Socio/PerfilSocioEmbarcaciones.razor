@@ -1,0 +1,198 @@
+@inject IMessageService MessageService
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+@if (Socio != null && Socio.Embarcaciones.Any())
+{
+    <DataGrid TItem="Embarcacion" Data="@Socio.Embarcaciones"
+              CommandMode="DataGridCommandMode.ButtonRow"
+              Filterable="false"
+              FilterMethod="DataGridFilterMethod.Contains"
+              ShowPager="true"
+              ShowPageSizes="false"
+              RowClicked="EmbarcacionClicked"
+              PageSize="10"
+              RowSelectable="(r) => false">
+        <DataGridColumns>
+            <DataGridColumn Field="Nombre" Caption="Nombre"/>
+            <DataGridColumn Field="Marca" Caption="Marca"/>
+            <DataGridColumn Field="Tipo" Caption="Tipo"/>
+            <DataGridColumn Field="Localizacion" Caption="Localizacion"/>
+            <DataGridColumn Field="Eslora" Caption="Eslora"/>
+            <DataGridColumn Field="Manga" Caption="Manga"/>
+        </DataGridColumns>
+        <ButtonRowTemplate>
+            <Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="DoShowAdd">
+                <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+            </Button>
+        </ButtonRowTemplate>
+    </DataGrid>
+}
+else
+{
+    <EmptyView/>
+}
+
+<Modal @ref="editDialog">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nueva Embarcación" : "Editando Embarcación")</ModalTitle>
+            <CloseButton Clicked="DoRevertEdit"/>
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual">
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field >
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Nombre</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit ReadOnly="@(!isCreating)" @bind-Text="_editRow.Nombre"/>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Fields>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field >
+                            <FieldLabel ColumnSize="ColumnSize.Is4">Marca</FieldLabel>
+                            <FieldBody ColumnSize="ColumnSize.Is8">
+                                <TextEdit @bind-Text="_editRow.Marca"/>
+                            </FieldBody>
+                        </Field>
+                    </Validation>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field >
+                            <FieldLabel ColumnSize="ColumnSize.Is4">Tipo</FieldLabel>
+                            <FieldBody ColumnSize="ColumnSize.Is8">
+                                <TextEdit @bind-Text="_editRow.Tipo"/>
+                            </FieldBody>
+                        </Field>
+                    </Validation>
+                </Fields>
+                <Fields>
+                    <Field >
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Eslora</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <NumericEdit TValue="Double" @bind-Value="_editRow.Eslora"/>
+                        </FieldBody>
+                    </Field>
+
+                    <Field >
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Manga</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <NumericEdit TValue="Double" @bind-Value="_editRow.Manga"/>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field >
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Ubicación</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit @bind-Text="_editRow.Localizacion"/>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    Modal editDialog;
+    bool isCreating;
+    bool _isBusy;
+    Validations editValidator;
+    //
+    Embarcacion _editRow = new();
+
+    void DoRevertEdit()
+    {
+        _editRow = new();
+        editDialog.Hide();
+    }
+
+    [CascadingParameter]
+    public AppState AppState { get; set; }
+
+    [Parameter]
+    public Action<Socio> OnSocioChanged { get; set; }
+
+    [Parameter]
+    public Socio Socio { get; set; }
+
+    private void EmbarcacionClicked(DataGridRowMouseEventArgs<Embarcacion> arg)
+    {
+        _editRow = arg.Item with {};
+        isCreating = false;
+        editDialog.Show();
+    }
+
+    private void DoShowAdd()
+    {
+        _editRow = new();
+        isCreating = true;
+        editDialog.Show();
+    }
+
+    async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+
+        if (!await editValidator.ValidateAll())
+        {
+            return;
+        }
+
+        await editValidator.ClearAll();
+
+        try
+        {
+            _isBusy = true;
+            Socio = await ApiService.UpsertEmbarcacion(AppState.ClubKey, Socio.Id, _editRow);
+            StateHasChanged();
+            OnSocioChanged?.Invoke(Socio);
+            editDialog.Hide();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            NotificationService.Error("Ha ocurrido un error actualizando registro, favor revisar e intentar nuevamente.", "Alerta");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    async Task DoDelete()
+    {
+        editDialog.Hide();
+        if (!await MessageService.Confirm("Seguro que desea borrar esta embarcación de este socio?", "Confirme"))
+        {
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            Socio = await ApiService.DeleteEmbarcacion(AppState.ClubKey, Socio.Id, _editRow);
+            StateHasChanged();
+            OnSocioChanged?.Invoke(Socio);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            NotificationService.Error("Ha ocurrido un error borrando registro, favor revisar e intentar nuevamente.", "Alerta");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+}

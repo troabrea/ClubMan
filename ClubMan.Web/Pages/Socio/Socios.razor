@@ -1,0 +1,34 @@
+@page "/Socios"
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+@inject IApiService ApiService
+@inject ICloudStorageService CloudStorageService
+
+
+<ListContent @ref="_dataGrid" IconName="IconName.IdCard" OnRowClicked="DoShowDetail" TItem="Socio" Title="Socios" LoadDataAsync="() => ApiService.GetSocios(AppState.ClubKey)">
+    <Columns>
+        <GridColumn Field="NumeroCarnet" Width="120px" HeaderText="Carnet"/>
+        <GridColumn Field="FechaMembresia" Width="120px" HeaderText="Desde" Format="dd-MMM-yyyy"></GridColumn>
+        <GridColumn Field="Nombre" HeaderText="Nombre"/>
+        <GridColumn Field="Celular" Width="120px"></GridColumn>
+        <GridColumn Field="TipoSocio" Width="120px" HeaderText="Tipo"></GridColumn>
+        <GridColumn Field="EstatusMembresia" Width="120px" HeaderText="Estatus"></GridColumn>
+    </Columns>
+</ListContent>
+
+@code {
+    FilePicker _filePicker;
+    ListContent<Socio> _dataGrid;
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    Modal _uploadFile;
+    
+    private void DoShowDetail(Socio socio)
+    {
+        NavigationManager.NavigateTo($"/PerfilSocio/{socio.Id}");
+    }
+
+    
+
+}

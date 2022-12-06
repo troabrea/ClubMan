@@ -1,0 +1,109 @@
+@using System.Runtime.CompilerServices
+@using Syncfusion.Blazor.PdfViewer
+@if(Solicitud != null && Solicitud.Revisiones.Any()) {
+    <Container Margin="Margin.Is2">
+        @foreach (var rev in Solicitud.Revisiones.OrderByDescending(x => x.FechaSometida))
+        {
+            <Card Padding="Padding.Is3" Margin="Margin.Is4.FromTop">
+            @if (rev.EstatusRevision == EstatusRevision.Pendiente)
+            {
+                <Fields >
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel >Sometido por</FieldLabel>
+                        <FieldBody >
+                            <TextEdit ReadOnly="true" @bind-Text="rev.SometidaPor"/>
+                        </FieldBody>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel >Fecha Sometida</FieldLabel>
+                        <FieldBody >
+                            <DatePicker TValue="DateTime" DisplayFormat="dd-MMM-yyyy" ReadOnly="true" @bind-Date="rev.FechaSometida"/>
+                        </FieldBody>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel >Estatus</FieldLabel>
+                        <FieldBody >
+                            <TextEdit ReadOnly="true" Text="@rev.Estatus"/>
+                        </FieldBody>
+                    </Field>
+                </Fields> 
+            } else {
+                    <Fields >
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel >Sometido por</FieldLabel>
+                            <FieldBody >
+                                <TextEdit ReadOnly="true" @bind-Text="rev.SometidaPor"/>
+                            </FieldBody>
+                        </Field>
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel >Fecha Sometida</FieldLabel>
+                            <FieldBody >
+                                <DatePicker TValue="DateTime" DisplayFormat="dd-MMM-yyyy" ReadOnly="true" @bind-Date="rev.FechaSometida"/>
+                            </FieldBody>
+                        </Field>
+                    </Fields>
+                    <Field>
+                        <FieldLabel>Observaciones</FieldLabel>
+                        <FieldBody>
+                            <MemoEdit ReadOnly="true" Text="@rev.Observaciones"></MemoEdit>
+                        </FieldBody>
+                    </Field>
+                    <Fields Margin="Margin.Is2.FromTop">
+                        <Field ColumnSize="ColumnSize.Is4">
+                            <FieldLabel >Completado por</FieldLabel>
+                            <FieldBody >
+                                <TextEdit ReadOnly="true" @bind-Text="rev.CompletadaPor"/>
+                            </FieldBody>
+                        </Field>
+                        <Field ColumnSize="ColumnSize.Is4">
+                            <FieldLabel >Fecha Completada</FieldLabel>
+                            <FieldBody >
+                                <DatePicker TValue="DateTime" DisplayFormat="dd-MMM-yyyy" ReadOnly="true" @bind-Date="rev.FechaRevision"/>
+                            </FieldBody>
+                        </Field>
+                        <Field ColumnSize="ColumnSize.Is4">
+                            <FieldLabel >Estatus</FieldLabel>
+                            <FieldBody >
+                                <TextEdit ReadOnly="true" Text="@rev.Estatus"/>
+                            </FieldBody>
+                        </Field>
+                    </Fields>
+                    @if (rev.EstatusRevision == EstatusRevision.Aprobado)
+                    {
+                        <Divider DividerType="DividerType.TextContent">Información de aprobación</Divider>
+                        <Fields Margin="Margin.Is2.FromTop">
+                            <Field ColumnSize="ColumnSize.Is4">
+                                <FieldLabel >Número Asignado</FieldLabel>
+                                <FieldBody >
+                                    <TextEdit ReadOnly="true" @bind-Text="rev.NumeroAprobacion"/>
+                                </FieldBody>
+                            </Field>
+                            <Field ColumnSize="ColumnSize.Is4">
+                                <FieldLabel >Acciones</FieldLabel>
+                                <FieldBody >
+                                    <NumericEdit TValue="Int32" ReadOnly="true" @bind-Value="rev.CantidadAcciones"/>
+                                </FieldBody>
+                            </Field>
+                            <Field ColumnSize="ColumnSize.Is4">
+                                <FieldLabel >Valoraciones</FieldLabel>
+                                <FieldBody >
+                                    <NumericEdit TValue="Decimal" ReadOnly="true" @bind-Value="rev.Valoracciones"/>
+                                </FieldBody>
+                            </Field>
+                        </Fields>
+                    }
+            }
+            </Card>
+        }
+    </Container>
+}
+else
+{
+    <EmptyView/>
+}
+@code {
+
+    [Parameter]
+    public Solicitud Solicitud { get; set; }
+
+}

@@ -5,6 +5,7 @@
 @inject INotificationService NotificationService
 @inject NavigationManager NavigationManager
 @inject IApiService ApiService
+@inject ICloudStorageService CloudStorageService
 
 <ListContent @ref="_dataGrid" IconName="IconName.Inbox" OnRowClicked="DoShowDetail" OnAddButtonClicked="() => _uploadFile.Show()" TItem="Solicitud" Title="Solicitudes" LoadDataAsync="() => ApiService.GetSolicitudes(AppState.ClubKey)">
     <Columns>
@@ -14,7 +15,7 @@
         <GridColumn Field="Celular" Width="120px"></GridColumn>
         <GridColumn Field="TipoSocio" Width="120px" HeaderText="Tipo"></GridColumn>
         <GridColumn Field="EstatusSolicitud" Width="120px" HeaderText="Estatus"></GridColumn>
-        <GridColumn Field="UltimoSometimiento" Width="120px" HeaderText="Sometida El" Format="dd-MMM-yyyy"></GridColumn>
+        <GridColumn Field="UltimoSometimiento" Width="130px" HeaderText="Sometida" Format="dd-MMM-yyyy"></GridColumn>
     </Columns>
 </ListContent>
 
@@ -25,12 +26,13 @@
             <CloseButton />
         </ModalHeader>
         <ModalBody>
-            <FilePicker Multiple="false" Filter="*.pdf" Upload="OnFileUpload"></FilePicker>
+            <FilePicker @ref="_filePicker" Multiple="false" Filter="*.pdf" Upload="OnFileUpload"></FilePicker>
         </ModalBody>
     </ModalContent>
 </Modal>
 
 @code {
+    FilePicker _filePicker;
     ListContent<Solicitud> _dataGrid;
     [CascadingParameter]
     private AppState AppState { get; set; }
@@ -41,6 +43,13 @@
     {
         try
         {
+            var pdfUrl = string.Empty;
+            using (MemoryStream result = new MemoryStream())
+            {
+                await arg.File.OpenReadStream( long.MaxValue ).CopyToAsync( result ) ;
+                pdfUrl = await CloudStorageService.StoreBlob(Guid.NewGuid().ToString() + ".pdf", result);
+            }
+            
             using ( MemoryStream result = new MemoryStream() )
             {
                 await arg.File.OpenReadStream( long.MaxValue ).CopyToAsync( result ) ;
@@ -50,8 +59,9 @@
                 var json = Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int) stream.Length);
                 var pdfForm = System.Text.Json.JsonSerializer.Deserialize<SolicitudPdfForm>(json);
                 var sol = Solicitud.FromPdfForm(pdfForm);
-
+                sol.SolicitudPdfUrl = pdfUrl;
                 await ApiService.UpsertSolicitud(AppState.ClubKey, sol);
+                _filePicker.Clear();
                 await _uploadFile.Hide();
                 //
                 _dataGrid.ReloadData();

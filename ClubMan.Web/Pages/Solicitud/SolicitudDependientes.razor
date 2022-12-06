@@ -1,3 +1,4 @@
+@inject IApiService ApiService
 @if(Solicitud != null && Solicitud.Dependientes.Any()) {
     <Container Margin="Margin.Is2">
         @foreach (var dep in Solicitud.Dependientes)
@@ -5,7 +6,9 @@
             <Card Margin="Margin.Is3.FromTop" Padding="Padding.Is3">
                 <Row>
                     <Column ColumnSize="ColumnSize.Is2">
-                        <FigureImage Style="height: 100px;width: 100px" Source="https://st4.depositphotos.com/4329009/19956/v/450/depositphotos_199564354-stock-illustration-creative-vector-illustration-default-avatar.jpg"/>
+                        <Button Clicked="() => OnPickPhoto(dep.Id)">
+                            <FigureImage Style="height: 100px;width: 100px" Source="@(String.IsNullOrEmpty(dep.FotoUrl) ? "/nophoto.jpg" : dep.FotoUrl)"/>
+                        </Button>
                     </Column>
                     <Column ColumnSize="ColumnSize.Is10">
                         <Fields Margin="Margin.Is1.FromTop">
@@ -89,7 +92,7 @@
                             <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="dep.LugarTrabajo"/></FieldBody>
                         </Field>
                         <Field Horizontal ColumnSize="ColumnSize.Is4">
-                            <FieldLabel ColumnSize="ColumnSize.Is3">Posición</FieldLabel>
+                            <FieldLabel ColumnSize="ColumnSize.Is3">Cargo</FieldLabel>
                             <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="dep.Posicion"/></FieldBody>
                         </Field>
                     </Fields>
@@ -112,9 +115,21 @@ else
 {
     <EmptyView/>
 }
+
+<PhotoPicker @ref="_photoPicker" Title="Foto Dependiente"></PhotoPicker>
+
 @code {
 
+    [CascadingParameter] public AppState AppState { get; set; }
     [Parameter]
     public Solicitud Solicitud { get; set; }
-
+    PhotoPicker _photoPicker;
+    private void OnPickPhoto(Guid dependienteId)
+    {
+        _photoPicker.Show(async (url) =>
+        {
+            Solicitud = await ApiService.UpdateSolicitudDependientePhoto(AppState, Solicitud.Id, dependienteId, url);
+            StateHasChanged();
+        });
+    }
 }

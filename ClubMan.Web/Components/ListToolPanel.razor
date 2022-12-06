@@ -11,11 +11,14 @@
             <BarToggler />
             <BarMenu>
                 <BarStart>
-                    <BarItem>
-                        <Button Type="ButtonType.Link" Clicked="() => OnAddRecord?.Invoke()">
-                            <Icon Name="IconName.Add"></Icon>
-                        </Button>
-                    </BarItem>
+                    @if(OnAddRecord != null)
+                    {
+                        <BarItem>
+                            <Button Type="ButtonType.Link" Clicked="() => OnAddRecord?.Invoke()">
+                                <Icon Name="IconName.Add"></Icon>
+                            </Button>
+                        </BarItem>
+                    }
                     @ToolbarItems
                     @if (FilterModel.ShowRangeSelector)
                     {
@@ -52,14 +55,26 @@
                     </BarItem>
                 </BarStart>
                 <BarEnd>
+                    @if(OnSearch != null) {
+                        <BarItem>
+                            <Addons>
+                                <Addon AddonType="AddonType.Body">
+                                    <TextEdit KeyDown="OnSearchFieldKeyDown" Placeholder="texto a buscar" @bind-Text="_searchText"/>
+                                </Addon>
+                                <Addon AddonType="AddonType.End">
+                                    <Button Clicked="DoSearch" Color="Color.Dark"><Icon Name="IconName.Search"/></Button>
+                                </Addon>
+                            </Addons>
+                        </BarItem>
+                    }
                     <BarItem>
                         <Button Type="ButtonType.Link" Clicked="() => OnRefresh?.Invoke()">
                             <Icon Name="IconName.Redo"></Icon>
                         </Button>
                     </BarItem>
                     <BarItem>
-                        <BarDropdown  RightAligned="true">
-                             
+                        <BarDropdown RightAligned="true">
+
                             <BarDropdownToggle>
                                 Exportar
                             </BarDropdownToggle>
@@ -86,6 +101,8 @@
     [Parameter]
     public Action OnAddRecord { get; set; }
     [Parameter]
+    public Action<String> OnSearch { get; set; } 
+    [Parameter]
     public FilterModel FilterModel { get; set; }
     [Parameter]
     public Action OnFilterUpdate { get; set; }
@@ -98,7 +115,8 @@
     {
         OnFilterUpdate?.Invoke();
     }
-
+    private string _searchText = string.Empty;
+    
     private void SetThisMonth()
     {
         FilterModel.FromDate = new DateTime(DateTime.Today.Year,DateTime.Today.Month,1);
@@ -143,6 +161,19 @@
         DoNotifyUpdate();
     }
 
-    
+    private void DoSearch()
+    {
+        OnSearch?.Invoke(_searchText);
+    }
+    private void OnSearchFieldKeyDown(KeyboardEventArgs arg)
+    {
+        if (!arg.AltKey && !arg.CtrlKey && !arg.ShiftKey)
+        {
+            if (arg.Code == "NumpadEnter" || arg.Code == "Enter")
+            {
+                OnSearch?.Invoke(_searchText);
+            }
+        }
+    }
 
 }

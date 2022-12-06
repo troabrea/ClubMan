@@ -44,7 +44,7 @@
         <GridColumn HeaderText="Fecha" Field="@nameof(Noticia.Fecha)" Width="120px" Format="dd-MMM-yyyy"/>
         <GridColumn HeaderText="Título" Field="@nameof(Noticia.Titulo)"/>
         <GridColumn HeaderText="Resumen" Field="@nameof(Noticia.Resumen)"/>
-        <GridColumn Width="100px" HeaderText="Publicado" AllowFiltering="true" Field="@nameof(Noticia.Publicado)">
+        <GridColumn Width="120px" HeaderText="Publicado" AllowFiltering="true" Field="@nameof(Noticia.Publicado)">
             <Template>
                 @{
                     var item = (context as Noticia);

@@ -1,6 +1,6 @@
-@if(Solicitud != null && Solicitud.Emabarcaciones.Any()) {
+@if(Solicitud != null && Solicitud.Embarcaciones.Any()) {
     <Container Margin="Margin.Is2">
-        @foreach (var dep in Solicitud.Emabarcaciones)
+        @foreach (var dep in Solicitud.Embarcaciones)
         {
             <Container Margin="Margin.Is4.FromTop" >
                 <Fields Margin="Margin.Is2.FromTop">
@@ -37,7 +37,7 @@
                         </FieldBody>
                     </Field>
                     <Field Horizontal ColumnSize="ColumnSize.Is3">
-                        <FieldLabel ColumnSize="ColumnSize.Is4">Localización</FieldLabel>
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Ubicación</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
                             <TextEdit ReadOnly="true" @bind-Text="dep.Localizacion"/>
                         </FieldBody>

@@ -1,0 +1,161 @@
+@page "/PerfilSocio/{SocioId:long}"
+@using Border = Syncfusion.Blazor.Grids.Border
+@inject IMessageService MessageService
+@inject NavigationManager NavigationManager
+@inject INotificationService NotificationService
+@inject IApiService ApiService;
+@inject IJSRuntime jsRuntime
+
+<DetailContent Title="@_title" IconName="IconName.Inbox" LoadDataAsync="DoLoadSocioAsync">
+    <ToolbarItems>
+            @if(_socio != null && _socio.SolicitudId > 0) {
+                <Bar Mode="BarMode.Horizontal" Breakpoint="Breakpoint.Widescreen">
+                    <BarMenu >
+                        <BarEnd>
+                            <BarDropdown RightAligned="true">
+                                <BarDropdownToggle>
+                                    <Icon Name="IconName.MoreVertical"></Icon>
+                                </BarDropdownToggle>
+                                <BarDropdownMenu>
+                                    <BarItem>
+                                        <Button Disabled="true" >Estado de Cuenta</Button>
+                                    </BarItem>
+                                    <BarItem>
+                                        <Button Clicked="ShowEditDialog" >Editar</Button>
+                                    </BarItem>
+                                    <BarDropdownDivider/>
+                                    <BarItem>
+                                        <Button Clicked="DoShowSolicitud">Ver Solicitud</Button>
+                                    </BarItem>
+                                </BarDropdownMenu>
+                            </BarDropdown>
+                        </BarEnd>
+                    </BarMenu>
+                </Bar>
+                
+            }
+        </ToolbarItems>
+    <ChildContent>
+        @if (_socio != null)
+        {
+            <PerfilSocioEncabezado Socio="_socio"/>
+            <Tabs Margin="Margin.Is1.FromTop" @bind-SelectedTab="_selectedTab">
+                <Items>
+                    <Tab Name="socio">Información del Socio</Tab>
+                    <Tab Name="dependientes">
+                        Dependientes
+                        <Badge Color="Color.Primary" Pill>@_socio.Dependientes.Count</Badge>
+                    </Tab>
+                    <Tab Name="adicionales">
+                        Adicionales
+                        <Badge Color="Color.Primary" Pill>@_socio.Adicionales.Count</Badge>
+                    </Tab>
+                    <Tab Name="embarcaciones">
+                        Embarcaciones
+                        <Badge Color="Color.Primary" Pill>@_socio.Embarcaciones.Count</Badge>
+                    </Tab>
+                    <Tab Name="eventos">
+                        <Icon Name="IconName.CalendarDay"></Icon> Eventos
+                    </Tab>
+                </Items>
+                <Content>
+                    <TabPanel Name="socio">
+                        <PerfilSocioDatos Socio="_socio"/>
+                    </TabPanel>
+                    <TabPanel Name="dependientes">
+                        <PerfilSocioDependientes Socio="_socio"/>
+                    </TabPanel>
+                    <TabPanel Name="adicionales">
+                        <PerfilSocioAdicionales OnSocioChanged="(soc) => { _socio = soc; StateHasChanged(); }" Socio="_socio"/>
+                    </TabPanel>
+                    <TabPanel Name="embarcaciones">
+                        <PerfilSocioEmbarcaciones Socio="_socio"/>
+                    </TabPanel>
+                    <TabPanel Name="eventos">
+                        <SocioEventos Socio="_socio"/>
+                    </TabPanel>
+                </Content>
+            </Tabs>
+        }
+    </ChildContent>
+</DetailContent>
+
+<Modal @ref="_editDialog">
+    <ModalContent Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>@("Editando Generales de Socio")</ModalTitle>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalBody>
+            <PerfilSocioDatos Socio="_editRow" IsReadOnly="false"/>
+        </ModalBody>
+        <ModalFooter>
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+
+@code {
+
+    bool _isBusy;
+    Modal _editDialog;
+    Socio _editRow = new();
+    
+    string _selectedTab = "socio";
+    string _title = "Perfil de Socio";
+    
+    [CascadingParameter] public AppState AppState { get; set; }
+
+    [Parameter]
+    public String SelectedTab
+    {
+        get { return _selectedTab; }
+        set { _selectedTab = value; }
+    }
+    
+    [Parameter] public long SocioId { get; set; }
+    Socio _socio;
+
+    private void ShowEditDialog()
+    {
+        _editRow = _socio with{};
+        _editDialog.Show();
+    }
+
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _socio = await ApiService.UpdateSocioGenerales(AppState.ClubKey, _editRow);
+            await _editDialog.Hide();
+            await NotificationService.Success("Registro actualizado exitosamente");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task DoLoadSocioAsync()
+    {
+        if(SocioId > 0) {
+            _socio = await ApiService.GetSocio(AppState.ClubKey, SocioId);
+            // _title = $"Perfíl de Socio - {_socio.NumeroCarnet} - {_socio.EstatusMembresia}";
+            StateHasChanged();
+        }
+    }
+
+    private void DoShowSolicitud()
+    {
+        NavigationManager.NavigateTo($"DetalleSolicitud/{_socio.SolicitudId}");
+    }
+
+}

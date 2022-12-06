@@ -1,4 +1,5 @@
 using ClubMan.Api;
+using ClubMan.Api.Services;
 using ClubMan.Shared.Model;
 using LamarCodeGeneration.Util;
 using Marten;
@@ -18,13 +19,18 @@ builder.Services.AddMarten(o =>
         o.Schema.For<Servicio>().MultiTenanted();
         o.Schema.For<Politica>().MultiTenanted();
         o.Schema.For<Solicitud>().MultiTenanted();
+        o.Schema.For<Socio>().MultiTenanted();
+        o.Schema.For<MovimientoSocio>().MultiTenanted();
+        o.Schema.For<Carnet>().Identity(x => x.CarnetId).Duplicate(x => x.NumeroIdentidad, notNull:true).
+            Duplicate(x => x.Nombre, notNull:true).
+            MultiTenanted();
         o.Schema.For<Empresa>();
         o.Schema.For<Usuario>().ForeignKey<Empresa>(u => u.EmpresaId);
     })
     .OptimizeArtifactWorkflow();
 
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddScoped<ICarnetService, CarnetService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

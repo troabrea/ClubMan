@@ -4,14 +4,14 @@
     <Fields>
         <Field ColumnSize="ColumnSize.Is3">
             <FieldLabel>Cédula o Pasaporte</FieldLabel>
-            <TextEdit ReadOnly="true" @bind-Text="Solicitud.NumeroIdentidad"></TextEdit>
+            <TextEdit ReadOnly="true" @bind-Text="Socio.NumeroIdentidad"></TextEdit>
         </Field>
         <Field ColumnSize="ColumnSize.Is3">
             <FieldLabel >Estado Civil</FieldLabel>
             <FieldBody>
-                <RadioGroup Disabled="true" TValue="EstadoCivil" @bind-CheckedValue="Solicitud.EstadoCivil" Inline="true">
-                    <Radio Disabled="true" ReadOnly="true" Value="@(EstadoCivil.Casado)">Casado</Radio>
-                    <Radio Disabled="true" Value="@(EstadoCivil.Soltero)">Soltero</Radio>
+                <RadioGroup Disabled="@IsReadOnly" TValue="EstadoCivil" @bind-CheckedValue="Socio.EstadoCivil" Inline="true">
+                    <Radio Disabled="@IsReadOnly" ReadOnly="@IsReadOnly" Value="@(EstadoCivil.Casado)">Casado</Radio>
+                    <Radio Disabled="@IsReadOnly" Value="@(EstadoCivil.Soltero)">Soltero</Radio>
                 </RadioGroup>
             </FieldBody>
         </Field>
@@ -19,7 +19,7 @@
         <Field ColumnSize="ColumnSize.Is3">
             <FieldLabel >Sexo</FieldLabel>
             <FieldBody>
-                <RadioGroup Disabled="true" TValue="Sexo" @bind-CheckedValue="Solicitud.Sexo" Inline="true">
+                <RadioGroup Disabled="true" TValue="Sexo" @bind-CheckedValue="Socio.Sexo" Inline="true">
                     <Radio Disabled="true" ReadOnly="true" Value="@(Sexo.Masculino)">M</Radio>
                     <Radio Disabled="true" Value="@(Sexo.Femenino)">F</Radio>
                 </RadioGroup>
@@ -27,95 +27,99 @@
         </Field>
         <Field ColumnSize="ColumnSize.Is3">
             <FieldLabel>RNC</FieldLabel>
-            <TextEdit ReadOnly="true" @bind-Text="Solicitud.NumeroFiscal"></TextEdit>
+            <TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.NumeroFiscal"></TextEdit>
         </Field>
     </Fields>
     <Fields Margin="Margin.Is1.FromTop">
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is4">Nacimiento</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><DatePicker ReadOnly="true" DisplayFormat="dd-MMM-yyyy" @bind-Date="Solicitud.FechaNacimiento"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><DatePicker ReadOnly="true" DisplayFormat="dd-MMM-yyyy" @bind-Date="Socio.FechaNacimiento"/></FieldBody>
         </Field>
 
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is4">Edad</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><NumericEdit ReadOnly="true" Value="Solicitud.Edad"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><NumericEdit ReadOnly="true" Value="Socio.Edad"/></FieldBody>
         </Field>
 
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is4">Nacionalidad</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="true" @bind-Text="Solicitud.Nacionalidad"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Nacionalidad"/></FieldBody>
         </Field>
 
     </Fields>
     <Field Horizontal ColumnSize="ColumnSize.Is12">
-        <FieldLabel ColumnSize="ColumnSize.Is2">Dirección</FieldLabel>
-        <FieldBody ColumnSize="ColumnSize.Is10"><TextEdit ReadOnly="true" @bind-Text="Solicitud.Direccion"/></FieldBody>
+        <FieldLabel ColumnSize="ColumnSize.Is1">Dirección</FieldLabel>
+        <FieldBody ColumnSize="ColumnSize.Is11"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Direccion"/></FieldBody>
     </Field>
     <Fields Margin="Margin.Is1.FromTop">
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is3">Sector</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="Solicitud.Sector"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Sector"/></FieldBody>
         </Field>
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is3">Ciudad</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="Solicitud.Ciudad"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Ciudad"/></FieldBody>
         </Field>
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is3">País</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="Solicitud.Pais"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Pais"/></FieldBody>
         </Field>
     </Fields>
     <Fields Margin="Margin.Is1.FromTop">
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is3">Teléfono</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="Solicitud.TelefonoResidencia"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.TelefonoResidencia"/></FieldBody>
         </Field>
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is3">Celular</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="Solicitud.Celular"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Celular"/></FieldBody>
         </Field>
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is3">Email</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="Solicitud.Email"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Email"/></FieldBody>
         </Field>
     </Fields>
     <Divider DividerType="DividerType.TextContent" Text="Información Laboral"/>
     <Fields Margin="Margin.Is1.FromTop">
         <Field Horizontal ColumnSize="ColumnSize.Is8">
             <FieldLabel ColumnSize="ColumnSize.Is3">Lugar de Trabajo</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="Solicitud.LugarTrabajo"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.LugarTrabajo"/></FieldBody>
         </Field>
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is3">Cargo</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="Solicitud.Posición"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Posicion"/></FieldBody>
         </Field>
     </Fields>
     <Fields Margin="Margin.Is1.FromTop">
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is4">Teléfono Of.</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="true" @bind-Text="Solicitud.TelefonoOficina"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.TelefonoOficina"/></FieldBody>
         </Field>
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is4">Flota</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="true" @bind-Text="Solicitud.TelefonoFlota"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.TelefonoFlota"/></FieldBody>
         </Field>
         <Field Horizontal ColumnSize="ColumnSize.Is4">
             <FieldLabel ColumnSize="ColumnSize.Is4">Email Of.</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="true" @bind-Text="Solicitud.EmailTrabajo"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.EmailTrabajo"/></FieldBody>
         </Field>
     </Fields>
     <Fields Margin="Margin.Is1.FromTop">
         <Field Horizontal ColumnSize="ColumnSize.Is6">
             <FieldLabel ColumnSize="ColumnSize.Is4">Nombre Asistente</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="true" @bind-Text="Solicitud.NombreAsistente"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.NombreAsistente"/></FieldBody>
         </Field>
         <Field Horizontal ColumnSize="ColumnSize.Is6">
             <FieldLabel ColumnSize="ColumnSize.Is4">Email Asistente</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="true" @bind-Text="Solicitud.EmailAsitente"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.EmailAsitente"/></FieldBody>
         </Field>
     </Fields>
 
 </Container>
 @code {
-    [Parameter] public Solicitud Solicitud { get; set; }
+    [Parameter] public Socio Socio { get; set; }
+
+    [Parameter]
+    public bool IsReadOnly { get; set; } = true;
+
 }

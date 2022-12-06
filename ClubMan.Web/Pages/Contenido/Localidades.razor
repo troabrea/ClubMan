@@ -4,7 +4,7 @@
 
 <ListContent @ref="_dataGrid" TItem="Localidad" Title="Localidades" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd" IconName="IconName.Map" LoadDataAsync="() => ApiService.GetLocalidades(AppState.ClubKey)">
     <Columns>
-        <GridColumn Width="80px" HeaderText="Orden" Field="@nameof(Localidad.Orden)" />
+        <GridColumn Width="120px" HeaderText="Orden" Field="@nameof(Localidad.Orden)" />
         <GridColumn HeaderText="Título" Field="@nameof(Localidad.Nombre)"/>
         <GridColumn HeaderText="Categoría" Field="@nameof(Localidad.Direccion)"/>
         <GridColumn HeaderText="Sólo Oficina" Width="80px" AllowFiltering="false" Field="@nameof(Localidad.SoloOficina)">
@@ -15,7 +15,7 @@
                  }
             </Template>
         </GridColumn>
-        <GridColumn HeaderText="Publicado" Width="80px" AllowFiltering="false" Field="@nameof(Servicio.Publicado)">
+        <GridColumn HeaderText="Publicado" Width="120px" AllowFiltering="false" Field="@nameof(Servicio.Publicado)">
             <Template>
                 @{
                     var item = (context as Localidad);

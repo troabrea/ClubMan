@@ -11,6 +11,7 @@ public record MembresiaAlterna
 
 public record Dependiente
 {
+    public Guid Id { get; set; } = Guid.NewGuid();
     public TipoDependiente TipoDependiente { get; set; }
     public String Nombre { get; set; }
     public String NumeroIndentidad { get; set; }
@@ -24,6 +25,8 @@ public record Dependiente
     public String Posicion { get; set; }
     public String DireccionTrabajo { get; set; }
     public String TelefonoTrabajo { get; set; }
+    
+    public String FotoUrl { get; set; }
 
     public int Edad => FechaNacimiento.Age();
 }
@@ -62,6 +65,7 @@ public record Revision
     public decimal Valoracciones { get; set; }
     public String SometidaPor { get; set; }
     public String CompletadaPor { get; set; }
+    public String Estatus => EstatusRevision.ToString();
 }
 
 public record Solicitud
@@ -101,10 +105,14 @@ public record Solicitud
     public List<Dependiente> Dependientes { get; set; }
     public List<SocioSecundador> SociosSecundadores { get; set; }
     public List<ReferenciaBancaria> ReferenciasBancarias { get; set; }
-    public List<Embarcacion> Emabarcaciones { get; set; }
+    public List<Embarcacion> Embarcaciones { get; set; }
     
     public List<Revision> Revisiones { get; set; }
 
+    public String SolicitudPdfUrl { get; set; }
+    
+    public String FotoSocioUrl { get; set; }
+    
     public String SolicitudPara => String.IsNullOrEmpty(Beneficiario) ? Solicitante : $"{Solicitante} / {Beneficiario}";
 
     public int Edad => FechaNacimiento.Age();
@@ -134,10 +142,10 @@ public record Solicitud
 
     private static void DatosDeEmbarcacion(SolicitudPdfForm dto, Solicitud sol)
     {
-        sol.Emabarcaciones = new List<Embarcacion>();
+        sol.Embarcaciones = new List<Embarcacion>();
         if (!String.IsNullOrEmpty(dto.undefined_2))
         {
-            sol.Emabarcaciones.Add(new Embarcacion()
+            sol.Embarcaciones.Add(new Embarcacion()
             {
                 Nombre = dto.undefined_2,
                 Eslora = double.Parse( dto.pies ),

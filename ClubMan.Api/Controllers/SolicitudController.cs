@@ -1,3 +1,4 @@
+using ClubMan.Api.Services;
 using ClubMan.Shared.Events;
 using ClubMan.Shared.Model;
 using Marten;
@@ -40,6 +41,43 @@ public class SolicitudController : TenantController
         return await session.Query<Solicitud>().ToListAsync();
     }
 
+    [HttpPost("updateMainPhoto", Name = "UpdateMainPhoto")]
+    public async Task<IActionResult> PostMainPhoto([FromBody] ActualizarFotoPrincipalEvent actualizarFotoPrincipalEvent)
+    {
+        using var session = _store.OpenSession(TenantId);
+        var solicitud = await session.LoadAsync<Solicitud>(actualizarFotoPrincipalEvent.SolicitudId);
+        if (solicitud == null)
+        {
+            return NotFound();
+        }
+        solicitud.FotoSocioUrl = actualizarFotoPrincipalEvent.FotoUrl;
+        session.Store(solicitud);
+        await session.SaveChangesAsync();
+        return Ok();
+    }
+    
+    [HttpPost("updateSecondaryPhoto", Name = "UpdateSecondaryPhoto")]
+    public async Task<IActionResult> PostSecondayPhoto([FromBody] ActualizarFotoDependienteEvent actualizarFotoDependienteEvent)
+    {
+        using var session = _store.OpenSession(TenantId);
+        var solicitud = await session.LoadAsync<Solicitud>(actualizarFotoDependienteEvent.SolicitudId);
+        if (solicitud == null)
+        {
+            return NotFound();
+        }
+
+        var dep = solicitud.Dependientes.FirstOrDefault(x => x.Id == actualizarFotoDependienteEvent.DependienteId);
+        if (dep == null)
+        {
+            return NotFound();
+        }
+        
+        dep.FotoUrl = actualizarFotoDependienteEvent.FotoUrl;
+        session.Store(solicitud);
+        await session.SaveChangesAsync();
+        return Ok();
+    }
+    
     [HttpPost(Name = "AddOrUpdateSolicitud")]
     public async Task<IActionResult> Post([FromBody] Solicitud solicitud)
     {
@@ -54,10 +92,7 @@ public class SolicitudController : TenantController
     {
         using var session = _store.OpenSession(TenantId);
         var solicitud = await session.LoadAsync<Solicitud>(someterEvent.SolicitudId);
-        if (solicitud.Revisiones == null)
-        {
-            solicitud.Revisiones = new List<Revision>();
-        }
+        solicitud.Revisiones ??= new List<Revision>();
         solicitud.Revisiones.Add( new Revision()
         {
             FechaSometida = someterEvent.FechaSometimiento,
@@ -110,6 +145,34 @@ public class SolicitudController : TenantController
         solicitud.UltimaRevision = rechazarEvent.FechaRevision; 
         //
         session.Store(solicitud);
+        await session.SaveChangesAsync();
+        return Ok();
+    }
+    [HttpPost("approve", Name = "AprobarSolicitud")]
+    public async Task<IActionResult> PostApproval([FromBody] AprobarSolicitudEvent aprobarEvent, [FromServices] ICarnetService carnetService)
+    {
+        using var session = _store.OpenSession(TenantId);
+        var solicitud = await session.LoadAsync<Solicitud>(aprobarEvent.SolicitudId);
+        var revison = solicitud.Revisiones.First(x => x.EstatusRevision == EstatusRevision.Pendiente);
+        //
+        revison.Observaciones = aprobarEvent.Observaciones;
+        revison.FechaRevision = aprobarEvent.FechaRevision;
+        revison.EstatusRevision = EstatusRevision.Rechazado;
+        revison.CompletadaPor = aprobarEvent.UserName;
+        revison.NumeroAprobacion = aprobarEvent.NumeroAprobacion;
+        revison.CantidadAcciones = aprobarEvent.CantidadAcciones;
+        revison.Valoracciones = aprobarEvent.Valoraciones;
+        //
+        solicitud.EstatusSolicitud = EstatusSolicitud.Aprobado;
+        solicitud.UltimaRevision = aprobarEvent.FechaRevision;
+        //
+        var socio = Socio.FromSolicitud(solicitud, aprobarEvent);
+        //x
+        session.Store(solicitud);
+        session.Store(socio);
+        //
+        carnetService.CreateInitialCarnets(session, socio);
+        //
         await session.SaveChangesAsync();
         return Ok();
     }
