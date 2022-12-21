@@ -40,6 +40,7 @@ public record Socio
     public String FotoUrl { get; set; }
     public List<DependienteSocio> Dependientes { get; set; } = new();
     public List<Embarcacion> Embarcaciones { get; set; } = new();
+    public List<HuespedSocio> Huespededes { get; set; } = new();
     public List<AdicionalSocio> Adicionales { get; set; } = new();
     public int Edad => FechaNacimiento.Age();
     public string TipoDeSocio => TipoSocio.ToString();
@@ -97,7 +98,7 @@ public record Socio
                 FechaNacimiento = dep.FechaNacimiento,
                 FotoUrl = dep.FotoUrl,
                 LugarTrabajo = dep.LugarTrabajo,
-                NumeroIndentidad = dep.NumeroIndentidad,
+                NumeroIdentidad = dep.NumeroIndentidad,
                 TelefonoTrabajo = dep.TelefonoTrabajo,
                 TipoDependiente = dep.TipoDependiente,
                 Estatus = EstatusMovimiento.Aprobado
@@ -119,7 +120,7 @@ public record DependienteSocio
     public String NumeroCarnet { get; set; }
     public TipoDependiente TipoDependiente { get; set; }
     public String Nombre { get; set; }
-    public String NumeroIndentidad { get; set; }
+    public String NumeroIdentidad { get; set; }
     public DateTime FechaNacimiento { get; set; }
     public String Nacionalidad { get; set; }
     public Sexo Sexo { get; set; }
@@ -138,6 +139,24 @@ public record DependienteSocio
     public Guid MovimientoId { get; set; }
 }
 
+public record HuespedSocio
+{
+    public long Id { get; set; }
+    public DateTime Desde { get; set; }
+    public DateTime Hasta { get; set; }
+    
+    public String Nombre { get; set; }
+    public String NumeroIdentidad { get; set; }
+    public String Parentesco { get; set; }
+    
+    public String FotoUrl { get; set; }
+
+    public EstatusMovimiento Estatus { get; set; }
+    public Guid MovimientoId { get; set; }
+    
+    public String NumeroCarnet { get; set; }
+}
+
 public record AdicionalSocio
 {
     public long Id { get; set; }
@@ -149,38 +168,4 @@ public record AdicionalSocio
     public String FotoUrl { get; set; }
     public EstatusMovimiento Estatus { get; set; }
     public Guid MovimientoId { get; set; }
-}
-
-public record MovimientoSocio
-{
-    public long Id { get; set; }
-    public long SocioId { get; set; }
-    public long DependienteId { get; set; }
-    public TipoMovimiento TipoMovimiento { get; set; }
-    public Guid ReferenciaId { get; set; }
-    public String Nota { get; set; }
-    public DateTime FechaRegistro { get; set; }
-    public String RegistradaPor { get; set; }
-    public DateTime FechaRevision { get; set; }
-    public String RevisadoPor { get; set; }
-    public String Comentario { get; set; }
-    public EstatusMovimiento Estatus { get; set; }
-
-    public string TipoDeMovimiento =>
-        TipoMovimiento switch
-        {
-            TipoMovimiento.AgregarAdicional => "Agregar Adicional",
-            TipoMovimiento.CambiarAPasiva => "Cambiar a Pasiva",
-            TipoMovimiento.ReActivar => "Reactivar Membresía",
-            TipoMovimiento.BloquearEntrada => "Bloquear Entrada",
-            TipoMovimiento.MarcarComoNoResidente => "Marcar No-Residente",
-            TipoMovimiento.CancelarMembresia => "Cancelar Membresia",
-            TipoMovimiento.AgregarDependiente => "Agregar Dependiente",
-            TipoMovimiento.QuitarDependiente => "Remover Dependiente",
-            TipoMovimiento.QuitarAdicional => "Remover Adicional",
-            TipoMovimiento.SolicitarHuesped => "Activar Huesped(es)",
-            TipoMovimiento.SolicitarActividad => "Aprobar Evento",
-            TipoMovimiento.SolicitarInvitadoExtraordinario => "Aprobar invitado extraordinario",
-            _ => ""
-        };
 }

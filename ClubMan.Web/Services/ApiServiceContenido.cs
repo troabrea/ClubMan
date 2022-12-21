@@ -32,6 +32,19 @@ public partial class ApiService : IApiService
         SetupClient(apiKey);
         return _httpClient.GetFromJsonAsync<List<Noticia>>("Noticia/all");
     }
+
+    public Task<List<Mensaje>> GetMensajes(string apiKey)
+    {
+        SetupClient(apiKey);
+        return _httpClient.GetFromJsonAsync<List<Mensaje>>("Mensaje");
+    }
+
+    public Task<List<Mensaje>> GetAllMensajes(string apiKey)
+    {
+        SetupClient(apiKey);
+        return _httpClient.GetFromJsonAsync<List<Mensaje>>("Mensaje/all");
+    }
+
     public Task<List<Servicio>> GetServicios(string apiKey)
     {
         SetupClient(apiKey);
@@ -49,7 +62,7 @@ public partial class ApiService : IApiService
         SetupClient(apiKey);
         return _httpClient.GetFromJsonAsync<List<InstalacionViewModel>>("Instalacion");
     }
-
+    
     public async Task<List<ActividadViewModel>> GetActividades(string apiKey)
     {
         SetupClient(apiKey);
@@ -125,12 +138,24 @@ public partial class ApiService : IApiService
         return _httpClient.PostAsJsonAsync("Noticia", noticia);
     }
 
+    public Task UpsertMensaje(string apiKey, Mensaje mensaje)
+    {
+        SetupClient(apiKey);
+        return _httpClient.PostAsJsonAsync("Mensaje", mensaje);
+    }
+
     public Task RemoveNoticia(string apiKey, Guid noticiaId)
     {
         SetupClient(apiKey);
         return _httpClient.DeleteAsync($"Noticia/{noticiaId}");
     }
-    
+
+    public Task RemoveMensaje(string apiKey, Guid mensajeId)
+    {
+        SetupClient(apiKey);
+        return _httpClient.DeleteAsync($"Mensaje/{mensajeId}");
+    }
+
     public Task UpsertInstalacion(string apiKey, Instalacion instalacion)
     {
         SetupClient(apiKey);

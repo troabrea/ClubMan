@@ -26,7 +26,7 @@ public class AgregarDependienteService : MovimientoService
         if (procesaMovimientoEvent.Estatus == EstatusMovimiento.Aprobado &&
             String.IsNullOrEmpty(dependiente.NumeroCarnet))
         {
-            _carnetService.ActivaCarnetDependiente(Session, socio, dependiente);
+            await _carnetService.ActivaCarnetDependiente(Session, socio, dependiente);
         }
         Session.Store(socio);
         Session.Store(Movimiento);
@@ -56,7 +56,7 @@ public class QuitarDependienteService : MovimientoService
             var dependiente = socio.Dependientes.FirstOrDefault(x => x.MovimientoId == Movimiento.ReferenciaId);
             dependiente.Estatus = EstatusMovimiento.Rechazado;
             //
-            _carnetService.InactivaCarnetDependiente(Session, socio, dependiente);
+            await _carnetService.InactivaCarnetDependiente(Session, socio, dependiente);
             //
             Session.Store(socio);
         }

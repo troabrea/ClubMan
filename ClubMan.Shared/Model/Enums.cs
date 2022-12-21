@@ -78,7 +78,8 @@ public enum TipoMovimiento
     QuitarAdicional,
     SolicitarHuesped,
     SolicitarActividad,
-    SolicitarInvitadoExtraordinario
+    SolicitarInvitadoExtraordinario,
+    QuitarHuesped,
 }
 
 public enum EstatusMovimiento
@@ -110,4 +111,21 @@ public enum TipoCarnet
     Dependiente,
     Huesped,
     Adicional
+}
+
+public enum TipoVista
+{
+    Socio,
+    Dependiente,
+    Huesped,
+    Adicional,
+    Invitado
+}
+
+public enum EstatusInvitacion
+{
+    Sometida,
+    Utilizada,
+    Cancelada,
+    Rechazada,
 }

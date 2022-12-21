@@ -101,14 +101,16 @@ else
                             </FieldBody>
                         </Field>
                     </Validation>
-                    <Field ColumnSize="ColumnSize.Is4">
-                        <FieldLabel TextColor="TextColor.Black50">Invitados</FieldLabel>
-                        <FieldBody>
-                            <NumericEdit TValue="Int32" @bind-Value="_editRow.Personas" Min="1" Max="150">
-                                <Feedback><ValidationError/></Feedback>
-                            </NumericEdit>
-                        </FieldBody>
-                    </Field>                    
+                    <Validation Validator="CapacidadValidator">
+                        <Field ColumnSize="ColumnSize.Is4">
+                            <FieldLabel TextColor="TextColor.Black50">Invitados</FieldLabel>
+                            <FieldBody>
+                                <NumericEdit TValue="Int32" @bind-Value="_editRow.Personas" Min="1" Max="150">
+                                    <Feedback><ValidationError/></Feedback>
+                                </NumericEdit>
+                            </FieldBody>
+                        </Field>  
+                    </Validation>
                 </Fields>
             </Validations>
             <Divider Text="Invitados"></Divider>
@@ -278,6 +280,20 @@ else
         Fecha = _editRow.FechaHora.Date;
         Hora = _editRow.FechaHora.Subtract(_editRow.FechaHora.Date);
         editDialog.Show();
+    }
+
+    private void CapacidadValidator(ValidatorEventArgs arg)
+    {
+        var instalacion = _instalaciones.FirstOrDefault(x => x.Id == _editRow.InstalacionId);
+        if (instalacion != null && instalacion.Instalacion.Reservable && instalacion.Instalacion.Capacidad > 0 && instalacion.Instalacion.Capacidad < _editRow.Personas)
+        {
+            arg.ErrorText = $"Excede capacidad ({instalacion.Instalacion.Capacidad})";
+            arg.Status = ValidationStatus.Error;
+        }
+        else
+        {
+            arg.Status = ValidationStatus.Success;
+        }
     }
 
 }

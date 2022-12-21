@@ -290,6 +290,116 @@ public class SocioController : TenantController
 
     #endregion
     
+    #region Huespedes
+
+    [HttpPost("huesped/{socioId:long}", Name = "AddOrUpdateHuespedDeSocio")]
+    public async Task<ActionResult<Socio>> AddOrUpdateHuesped(long socioId, AgregarHuespedEvent agregarHuespedEvent)
+    {
+        var huespedSocio = agregarHuespedEvent.HuespedSocio;
+        using var session = _store.OpenSession(TenantId);
+        var socio = await session.LoadAsync<Socio>(socioId);
+        if (socio == null) return BadRequest("Socio inválido");
+        var huesped = socio.Huespededes.FirstOrDefault(x => x.Id == huespedSocio.Id);
+        if (huesped == null)
+        {
+            var refId = Guid.NewGuid();
+            var newid = socio.Huespededes.Any() ? socio.Dependientes.Max(x => x.Id) + 1 : 1;
+            huesped = huespedSocio with
+            {
+                Id = newid,
+                MovimientoId = refId
+            };
+            socio.Huespededes.Add(huesped);
+            //
+            var mov = new MovimientoSocio
+            {
+                SocioId = socio.Id,
+                ReferenciaId = refId,
+                TipoMovimiento = TipoMovimiento.SolicitarHuesped,
+                Estatus = EstatusMovimiento.Pendiente,
+                FechaRegistro = DateTime.Today,
+                RegistradaPor = agregarHuespedEvent.UserName,
+                Nota =
+                    $"El socio {socio.NumeroCarnet} - {socio.Nombre}, desea agregar a {huesped.Nombre} como un huesped a su membresía."
+            };
+            //
+            session.Store( mov );
+        }
+        else
+        {
+            socio.Huespededes.Remove(huesped);
+            socio.Huespededes.Add(huespedSocio);
+        }
+        session.Store(socio);
+        await session.SaveChangesAsync();
+        return Ok();
+    }
+    
+    [HttpPost("huesped/activar", Name = "ReactivarHuespedDeSocio")]
+    public async Task<ActionResult<Socio>> ReactivateHuesped(AgregarHuespedEvent agregarHuespedEvent)
+    {
+        using var session = _store.OpenSession(TenantId);
+        var socio = await session.LoadAsync<Socio>(agregarHuespedEvent.SocioId);
+        if (socio == null) return BadRequest("Socio inválido");
+        var huesped = socio.Huespededes.FirstOrDefault(x => x.Id == agregarHuespedEvent.HuespedSocio.Id);
+        if (huesped == null || huesped.Estatus != EstatusMovimiento.Rechazado)
+        {
+            return BadRequest("Adicional inválido");
+        }
+
+        var refId = Guid.NewGuid();
+        var mov = new MovimientoSocio
+        {
+            SocioId = socio.Id,
+            ReferenciaId = refId,
+            TipoMovimiento = TipoMovimiento.SolicitarHuesped,
+            Estatus = EstatusMovimiento.Pendiente,
+            FechaRegistro = DateTime.Today,
+            RegistradaPor = agregarHuespedEvent.UserName,
+            Nota =
+                $"El socio {socio.NumeroCarnet} - {socio.Nombre}, desea activar a {huesped.Nombre} como un huesped a su membresía."
+        };
+        huesped.MovimientoId = refId;
+        huesped.Estatus = EstatusMovimiento.Pendiente;
+        session.Store(socio);
+        session.Store(mov);
+        await session.SaveChangesAsync();
+        return Ok();
+    }
+    
+    [HttpPost("huesped/cancelar", Name = "RemoveHuespedDeSocio")]
+    public async Task<ActionResult<Socio>> RemoveHuesped(AgregarHuespedEvent agregarHuespedEvent)
+    {
+        using var session = _store.OpenSession(TenantId);
+        var socio = await session.LoadAsync<Socio>(agregarHuespedEvent.SocioId);
+        if (socio == null) return BadRequest("Socio inválido");
+        var huesped = socio.Huespededes.FirstOrDefault(x => x.Id == agregarHuespedEvent.HuespedSocio.Id);
+        if (huesped == null || huesped.Estatus != EstatusMovimiento.Aprobado)
+        {
+            return BadRequest("Adicional inválido");
+        }
+
+        var refId = Guid.NewGuid();
+        var mov = new MovimientoSocio
+        {
+            SocioId = socio.Id,
+            ReferenciaId = refId,
+            TipoMovimiento = TipoMovimiento.QuitarHuesped,
+            Estatus = EstatusMovimiento.Pendiente,
+            FechaRegistro = DateTime.Today,
+            RegistradaPor = agregarHuespedEvent.UserName,
+            Nota =
+                $"El socio {socio.NumeroCarnet} - {socio.Nombre}, desea retirar a {huesped.Nombre} como un huesped a su membresía."
+        };
+        huesped.MovimientoId = refId;
+        session.Store(mov);
+        session.Store(socio);
+        await session.SaveChangesAsync();
+        return Ok();
+    }
+
+    #endregion
+    
     
     [HttpPost("embarcacion/{socioId:long}", Name = "AddOrUpdateEmbarcacion")]
     public async Task<ActionResult<Socio>> AddOrUpdateEmbaracion(long socioId, Embarcacion embarcacionSocio)

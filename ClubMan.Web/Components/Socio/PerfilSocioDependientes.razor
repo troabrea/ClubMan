@@ -17,7 +17,7 @@
             <DataGridColumn Field="NumeroCarnet" Caption="Carnet No."/>
             <DataGridColumn Field="TipoDependiente" Caption="Tipo"/>
             <DataGridColumn Field="Nombre" Caption="Nombre"/>
-            <DataGridColumn Field="NumeroIndentidad" Caption="Indentidad"/>
+            <DataGridColumn Field="NumeroIdentidad" Caption="Identidad"/>
             <DataGridColumn Field="Estatus" Caption="Estatus"/>
         </DataGridColumns>
         <ButtonRowTemplate>
@@ -80,7 +80,7 @@ else
                             <Field Horizontal ColumnSize="ColumnSize.Is12">
                                 <FieldLabel ColumnSize="ColumnSize.Is3">Cédula / Pasaporte</FieldLabel>
                                 <FieldBody ColumnSize="ColumnSize.Is9">
-                                    <TextEdit Readonly="@_isReadOnly" @bind-Text="_editRow.NumeroIndentidad"></TextEdit>
+                                    <TextEdit Readonly="@_isReadOnly" @bind-Text="_editRow.NumeroIdentidad"></TextEdit>
                                 </FieldBody>
                             </Field>
                         </Fields>
@@ -214,7 +214,7 @@ else
         editDialog.Hide();
         if (await MessageService.Confirm("Seguro que desea solicitar la cancelación de este carnet?", "Confirme"))
         {
-            Socio = await ApiService.ReActivateSocioDependiente(AppState, Socio.Id, _editRow);
+            Socio = await ApiService.DeActivateSocioDependiente(AppState, Socio.Id, _editRow);
             StateHasChanged();
             OnSocioChanged?.Invoke(Socio);
         }
@@ -243,6 +243,7 @@ else
         else
         {
             _isReadOnly = (_editRow.Estatus != EstatusMovimiento.Pendiente);
+            isCreating = false;
             await editDialog.Show();
         }  
     }
@@ -282,7 +283,7 @@ else
     async Task DoDelete()
     {
         editDialog.Hide();
-        if ( !await MessageService.Confirm( "Seguro que desea borrar esta persona adicional de este socio?", "Confirme" ) )
+        if ( !await MessageService.Confirm( "Seguro que desea borrar esta persona dependiente de este socio?", "Confirme" ) )
         {
             return;
         }
@@ -290,7 +291,7 @@ else
         try
         {
             _isBusy = true;
-            Socio = await ApiService.DeleteAdicional(AppState.ClubKey, Socio.Id, _editRow.Id);
+            Socio = await ApiService.DeActivateSocioDependiente(AppState, Socio.Id, _editRow);
             StateHasChanged();
             OnSocioChanged?.Invoke(Socio);
         }

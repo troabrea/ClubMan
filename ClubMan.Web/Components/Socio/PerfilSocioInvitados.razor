@@ -1,0 +1,35 @@
+@inject IApiService ApiService
+
+<DataGrid TItem="InvitacionDeSocio" Data="@_invitados"
+          Filterable="false"
+          FilterMethod="DataGridFilterMethod.Contains"
+          ShowPager="true"
+          ShowPageSizes="false"
+          PageSize="10"
+          RowSelectable="(r) => false">
+    <DataGridColumns>
+        <DataGridColumn Field="FechaHora" Caption="Fecha" DisplayFormat="{0:dd-MMM-yyyy}"/>
+        <DataGridColumn Field="NumeroIdentidad" Caption="Identidad"/>
+        <DataGridColumn Field="NombreCompleto" Caption="Nombre"/>
+        <DataGridColumn Field="Estatus" Caption="Estatus"/>
+        <DataGridColumn Field="FechaHoraVisita" Caption="Visita" DisplayFormat="{0:dd-MMM-yyyy hh:mm}"/>
+    </DataGridColumns>
+    <EmptyTemplate>
+        <EmptyView/>
+    </EmptyTemplate>
+</DataGrid>
+
+@code {
+    [CascadingParameter] public AppState AppState { get; set; }
+    [Parameter] public Action<Socio> OnSocioChanged { get; set; }
+    [Parameter]
+    public Socio Socio { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _invitados = await ApiService.GetInvitacionesSocio(AppState.ClubKey, Socio.Id);
+        StateHasChanged();
+    }
+
+    private List<InvitacionDeSocio> _invitados = new();
+}

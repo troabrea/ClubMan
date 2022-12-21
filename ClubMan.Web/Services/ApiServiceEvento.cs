@@ -7,6 +7,11 @@ namespace ClubMan.Web.Services;
 
 public partial class ApiService : IApiService
 {
+    public Task<List<EventoViewModel>> GetEventos(string apiKey)
+    {
+        SetupClient(apiKey);
+        return _httpClient.GetFromJsonAsync<List<EventoViewModel>>($"Evento");
+    }
     public Task<List<EventoViewModel>> GetEventos(string apiKey, long socioId)
     {
         SetupClient(apiKey);

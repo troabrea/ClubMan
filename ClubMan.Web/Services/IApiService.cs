@@ -11,6 +11,8 @@ public interface IApiService
 
     Task<List<Noticia>> GetNoticias(string apiKey);
     Task<List<Noticia>> GetAllNoticias(string apiKey);
+    Task<List<Mensaje>> GetMensajes(string apiKey);
+    Task<List<Mensaje>> GetAllMensajes(string apiKey);
     Task<List<Servicio>> GetServicios(string apiKey);
     Task<List<Localidad>> GetLocalidades(string apiKey);
     Task<List<InstalacionViewModel>> GetInstalaciones(string apiKey);
@@ -23,11 +25,13 @@ public interface IApiService
     Task UpsertInstalacion(string apiKey, Instalacion instalacion);
     Task RemoveInstalacion(string apiKey, Guid instalacionId);
     Task UpsertNoticia(string apiKey, Noticia noticia);
+    Task UpsertMensaje(string apiKey, Mensaje mensaje);
     Task RemoveNoticia(string apiKey, Guid noticiaId);
+    Task RemoveMensaje(string apiKey, Guid mensajeId);
     Task UpsertActividad(string apiKey, Actividad actividad);
     Task RemoveActividad(string apiKey, Guid actividadId);
 
-        #endregion
+    #endregion
 
     #region Configuración
 
@@ -64,10 +68,16 @@ public interface IApiService
     Task<Socio> UpsertSocioAdicional(AppState appState, long socioId, AdicionalSocio adicionalSocio);
     Task<Socio> ReActivateSocioAdicional(AppState appState, long socioId, AdicionalSocio adicionalSocio);
     Task<Socio> DeActivateSocioAdicional(AppState appState, long socioId, AdicionalSocio adicionalSocio);
+    Task<Socio> DeleteAdicional(string apiKey, long socioId, long adicionalId);
+    
     Task<Socio> UpsertSocioDependiente(AppState appState, long socioId, DependienteSocio dependienteSocio);
     Task<Socio> ReActivateSocioDependiente(AppState appState, long socioId, DependienteSocio dependienteSocio);
     Task<Socio> DeActivateSocioDependiente(AppState appState, long socioId, DependienteSocio dependienteSocio);
-    Task<Socio> DeleteAdicional(string apiKey, long socioId, long adicionalId);
+    
+    Task<Socio> UpsertSocioHuesped(AppState appState, long socioId, HuespedSocio huespedSocio);
+    Task<Socio> ReActivateSocioHuesped(AppState appState, long socioId, HuespedSocio huespedSocio);
+    Task<Socio> DeActivateSocioHuesped(AppState appState, long socioId, HuespedSocio huespedSocio);
+    
     Task<Socio> UpsertEmbarcacion(string apiKey, long socioId, Embarcacion embarcacion);
     Task<Socio> DeleteEmbarcacion(string apiKey, long socioId, Embarcacion embarcacion);
     Task<List<MovimientoSocio>> GetAprobacionesPendientes(string apiKey);
@@ -76,7 +86,7 @@ public interface IApiService
     #endregion
 
     #region EventosDeSocio
-
+    Task<List<EventoViewModel>> GetEventos(string apiKey);
     Task<List<EventoViewModel>> GetEventos(string apiKey, long socioId);
     Task UpsertEvento(string apiKey, EventoDeSocio evento);
     Task RemoveEvento(string apiKey, long eventoId);
@@ -87,4 +97,17 @@ public interface IApiService
 
     #endregion
 
+    #region Invitaciones
+
+    Task<List<InvitacionDeSocio>> GetInvitacionesSocio(string apiKey, long socioId);
+
+    #endregion
+
+    #region Visitas
+    
+    Task<List<Visitas>> GetResumenVisitas(string apiKey);
+    Task<VisitasSocio> GetVisitasDeSocio(string apiKey, long socioId);
+
+    #endregion
+    
 }

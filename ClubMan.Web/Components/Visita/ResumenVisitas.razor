@@ -1,0 +1,50 @@
+@inject IApiService ApiService
+
+@if (_visitas == null)
+{
+    <Loading/>
+}
+else
+{
+    <Table FullWidth="false"  Bordered="true" Narrow="true">
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Periodo</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Visitas</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Socio</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Dep.</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Inv.</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Otros</TableHeaderCell>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            @foreach (var visita in _visitas)
+            {
+                <TableRow>
+                    <TableRowCell TextAlignment="TextAlignment.Center" TextWeight="TextWeight.Bold">@($"{visita.Ano}-{visita.Mes}")</TableRowCell>
+                    <TableRowCell TextAlignment="TextAlignment.Center" TextWeight="TextWeight.Bold">@visita.Cantidad</TableRowCell>
+                    <TableRowCell TextAlignment="TextAlignment.Center">@visita.Socios</TableRowCell>
+                    <TableRowCell TextAlignment="TextAlignment.Center">@visita.Dependientes</TableRowCell>
+                    <TableRowCell TextAlignment="TextAlignment.Center">@visita.Invitados</TableRowCell>
+                    <TableRowCell TextAlignment="TextAlignment.Center">@(visita.Adicionales + visita.Huespedes)</TableRowCell>
+                </TableRow>
+            }
+        </TableBody>
+    </Table>
+    
+}
+
+@code {
+    [CascadingParameter] public AppState AppState { get; set; }
+
+    List<Visitas> _visitas;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (AppState != null && !String.IsNullOrEmpty(AppState.ClubKey))
+        {
+            _visitas = await ApiService.GetResumenVisitas(AppState.ClubKey);
+        }
+    }
+
+}

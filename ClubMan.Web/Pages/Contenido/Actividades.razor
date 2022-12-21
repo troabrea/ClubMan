@@ -189,7 +189,7 @@
         {
             if (!await editValidator.ValidateAll()) return;
             _isBusy = true;
-            _editRow.FechaHora = Fecha.AddHours(Hora.TotalHours);
+            _editRow.FechaHora = Fecha.AddHours(Hora.TotalHours).AddMinutes(Hora.TotalMinutes);
             await ApiService.UpsertActividad(AppState.ClubKey, _editRow);
             await editDialog.Hide();
             _dataGrid.ReloadData();

@@ -4,6 +4,7 @@ namespace ClubMan.Shared.Events;
 
 public record AgregarAdicionalEvent(long SocioId, string UserName, AdicionalSocio AdicionalSocio);
 public record AgregarDependienteEvent(long SocioId, string UserName, DependienteSocio DependienteSocio);
+public record AgregarHuespedEvent(long SocioId, string UserName, HuespedSocio HuespedSocio);
 public record ProcesaMovimientoEvent(long MovimientoId, string UserName, EstatusMovimiento Estatus, string Comentario);
 
 public record SometerEventoEvent(long EventoId, string UserName, DateTime FechaSometimiento);

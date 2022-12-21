@@ -26,8 +26,8 @@ public class CarnetService : ICarnetService
             carnets.Add( new Carnet()
             {
                 SocioId = socio.Id,
-                Tipo = TipoCarnet.Principal,
-                NumeroIdentidad = dep.NumeroIndentidad ?? dep.NumeroCarnet,
+                Tipo = TipoCarnet.Dependiente,
+                NumeroIdentidad = dep.NumeroIdentidad ?? dep.NumeroCarnet,
                 Desde = socio.FechaMembresia,
                 Estatus = EstatusCarnet.Activo,
                 Nombre = dep.Nombre,
@@ -76,7 +76,7 @@ public class CarnetService : ICarnetService
                 SocioId = socio.Id,
                 ReferenciaId = dependienteSocio.Id,
                 Nombre = dependienteSocio.Nombre,
-                NumeroIdentidad = dependienteSocio.NumeroIndentidad ?? dependienteSocio.NumeroCarnet,
+                NumeroIdentidad = dependienteSocio.NumeroIdentidad ?? dependienteSocio.NumeroCarnet,
                 Desde = DateTime.Today,
                 Estatus = EstatusCarnet.Activo,
                 CarnetId = dependienteSocio.NumeroCarnet,
@@ -97,6 +97,56 @@ public class CarnetService : ICarnetService
         if (carnet != null)
         {
             carnet.Estatus = EstatusCarnet.Bloqueado;
+            session.Store(carnet);
+        }
+    }
+    
+    public async Task ActivaCarnetHuesped(IDocumentSession session, Socio socio, HuespedSocio huespedSocio)
+    {
+        if (String.IsNullOrEmpty(huespedSocio.NumeroCarnet))
+        {
+            huespedSocio.NumeroCarnet = $"{socio.NumeroCarnet}-H-{huespedSocio.Id}";
+        }
+        var carnet = await session.LoadAsync<Carnet>(huespedSocio.NumeroCarnet);
+        if (carnet == null)
+        {
+            carnet = new Carnet()
+            {
+                Tipo = TipoCarnet.Huesped,
+                SocioId = socio.Id,
+                ReferenciaId = huespedSocio.Id,
+                Nombre = huespedSocio.Nombre,
+                NumeroIdentidad = huespedSocio.NumeroIdentidad ?? huespedSocio.NumeroCarnet,
+                Desde = DateTime.Today,
+                Estatus = EstatusCarnet.Activo,
+                CarnetId = huespedSocio.NumeroCarnet,
+                DiasValidez = 0,
+                FotoUrl = huespedSocio.FotoUrl
+            };
+        }
+        else
+        {
+            carnet.Estatus = EstatusCarnet.Activo;
+        }
+        session.Store(carnet);
+    }
+
+    public async Task InactivaCarnetHuesped(IDocumentSession session, Socio socio, HuespedSocio huespedSocio)
+    {
+        var carnet = await session.Query<Carnet>().Where( x=> x.CarnetId == huespedSocio.NumeroCarnet).FirstOrDefaultAsync();
+        if (carnet != null)
+        {
+            carnet.Estatus = EstatusCarnet.Bloqueado;
+            session.Store(carnet);
+        }
+    }
+    
+    public async Task ExpiraCarnetHuesped(IDocumentSession session, Socio socio, HuespedSocio huespedSocio)
+    {
+        var carnet = await session.Query<Carnet>().Where( x=> x.CarnetId == huespedSocio.NumeroCarnet).FirstOrDefaultAsync();
+        if (carnet != null)
+        {
+            carnet.Estatus = EstatusCarnet.Expirado;
             session.Store(carnet);
         }
     }

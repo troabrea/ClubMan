@@ -1,0 +1,242 @@
+@page "/mensajes"
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="Mensaje" Title="Mensajes" IconName="IconName.Sms" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd" LoadDataAsync="LoadData">
+    <ToolbarItems>
+        <BarItem>
+            <Buttons Role="ButtonsRole.Toolbar" Border="Blazorise.Border.Rounded.Is1">
+                @if (_showGrid)
+                {
+                    <Button Background="Background.Info" Type="ButtonType.Link">
+                        <Icon Name="IconName.List" Clicked="DoShowGrid"></Icon>
+                    </Button>
+                    <Button Type="ButtonType.Link">
+                        <Icon Name="IconName.Receipt" Clicked="DoShowCards"></Icon>
+                    </Button>
+                }
+                else
+                {
+                    <Button Type="ButtonType.Link">
+                        <Icon Name="IconName.List" Clicked="DoShowGrid"></Icon>
+                    </Button>
+                    <Button Background="Background.Info" Type="ButtonType.Link">
+                        <Icon Name="IconName.Receipt" Clicked="DoShowCards"></Icon>
+                    </Button>
+                }
+            </Buttons>
+        </BarItem>
+        <BarItem>
+            <Container Margin="Margin.Is2.FromStart.Is2.FromTop" VerticalAlignment="VerticalAlignment.Middle">
+                <Check TValue="bool" Checked="_showAll" CheckedChanged="DoToogleShowAll">Ver enviados</Check>
+            </Container>
+        </BarItem>
+    </ToolbarItems>
+    <GridSetup>
+        <GridSortSettings>
+            <GridSortColumns>
+                <GridSortColumn Field="@nameof(Mensaje.FechaHora)" Direction="Syncfusion.Blazor.Grids.SortDirection.Descending"></GridSortColumn>
+            </GridSortColumns>
+        </GridSortSettings>
+    </GridSetup>
+    <Columns>
+        <GridColumn HeaderText="Fecha" Field="@nameof(Mensaje.FechaHora)" Width="180px" Format="dd-MMM-yyyy hh:mm"/>
+        <GridColumn HeaderText="Título" Field="@nameof(Mensaje.Titulo)"/>
+        <GridColumn HeaderText="Resumen" Field="@nameof(Mensaje.Contenido)"/>
+        <GridColumn Width="120px" HeaderText="Enviado" AllowFiltering="true" Field="@nameof(Mensaje.Enviado)">
+            <Template>
+                @{
+                    var item = (context as Mensaje);
+                    <Check Disabled="true" TValue="bool" @bind-Checked="@item.Enviado"/>
+                }
+    
+            </Template>
+        </GridColumn>
+    </Columns>
+    <CustomTemplate>
+        <CardDeck Padding="Padding.Is2">
+        @foreach (var item in  _dataGrid.Data)
+        {
+            <Card>
+                <CardBody>
+                    <CardTitle Size="5">
+                        <Heading Size="HeadingSize.Is5">@item.Titulo</Heading>
+                    </CardTitle>
+                    <CardText>
+                        @item.Contenido
+                    </CardText>
+                    <Button Margin="Margin.Is0" Padding="Padding.Is1" Type="ButtonType.Link" Outline="true" Border="Blazorise.Border.Is0" Float="Float.End" Color="Color.Primary" Clicked="() => NavigationManager.NavigateTo(item.DetalleUrl)" >Ver Mas...</Button>
+                </CardBody>
+            </Card>
+        }
+        </CardDeck>
+    </CustomTemplate>
+</ListContent>
+
+<Modal @ref="editDialog" >
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nuevo Mensaje" : "Editando Mensaje")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual">
+                <Row>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Fecha</FieldLabel>
+                        <FieldBody>
+                            <DatePicker TValue="DateTime"  @bind-Date="Fecha">
+                                <Feedback><ValidationError/></Feedback>
+                            </DatePicker>
+                        </FieldBody>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel TextColor="TextColor.Black50">Hora</FieldLabel>
+                        <FieldBody>
+                            <TimePicker TValue="TimeSpan"  @bind-Time="Hora">
+                                <Feedback><ValidationError/></Feedback>
+                            </TimePicker>
+                        </FieldBody>
+                    </Field>
+                </Row>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Titulo</FieldLabel>
+                        <TextEdit @bind-Text="_editRow.Titulo" Placeholder="Título del mensaje..."/>
+                    </Field>
+                </Validation>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Contenido</FieldLabel>
+                        <MemoEdit @bind-Text="_editRow.Contenido" Placeholder="Contenido del mensaje..."/>
+                    </Field>
+                </Validation>
+                <Field>
+                    <FieldLabel TextColor="TextColor.Black50">Detalle URL</FieldLabel>
+                    <TextEdit @bind-Text="_editRow.DetalleUrl" Placeholder="Dirección web para ver mas detalles..."/>
+                </Field>
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    bool _showAll = false;
+    
+    private DateTime Fecha { get; set; }
+    private TimeSpan Hora { get; set; }
+    
+    ListContent<Mensaje> _dataGrid;
+    bool _isBusy = false;
+    Validations editValidator;
+    bool isCreating = false;
+    Mensaje _editRow = new();
+    Modal editDialog;
+
+    private Task<List<Mensaje>> LoadData()
+    {
+        return _showAll ? ApiService.GetAllMensajes(AppState.ClubKey) : ApiService.GetMensajes(AppState.ClubKey);
+    }
+    private void DoRowClicked(Mensaje obj)
+    {
+        isCreating = false;
+        _editRow = obj with {};
+        Fecha = _editRow.FechaHora.Date;
+        Hora = _editRow.FechaHora.Subtract(_editRow.FechaHora.Date);
+        editDialog.Show();
+    }
+    
+    private void DoShowAdd()
+    {
+        isCreating = true;
+        _editRow = new Mensaje();
+        Fecha = _editRow.FechaHora.Date;
+        Hora = _editRow.FechaHora.Date.AddHours(10).Subtract(_editRow.FechaHora.Date);
+        editDialog.Show();
+    }
+
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            _editRow.FechaHora = Fecha.AddHours(Hora.TotalHours).AddMinutes(Hora.TotalMinutes);
+            await ApiService.UpsertMensaje(AppState.ClubKey, _editRow);
+            await editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+    
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemoveMensaje(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _dataGrid.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private bool _showGrid = true;
+    private void DoShowGrid(object obj)
+    {
+        _showGrid = true;
+        _dataGrid.ShowDataGrid();
+        StateHasChanged();
+    }
+    private void DoShowCards(object obj)
+    {
+        _showGrid = false;
+        _dataGrid.ShowCustomTemplate();
+        StateHasChanged();
+    }
+
+    private void DoToogleShowAll(bool arg)
+    {
+        _showAll = arg;
+        _dataGrid.ReloadData();
+    }
+
+}

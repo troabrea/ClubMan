@@ -70,6 +70,29 @@ public partial class ApiService : IApiService
         await _httpClient.PostAsJsonAsync($"Socio/dependiente/activar", agregarEvent);
         return await _httpClient.GetFromJsonAsync<Socio>($"Socio/{socioId}");  
     }
+    
+    public async Task<Socio> UpsertSocioHuesped(AppState appState, long socioId,  HuespedSocio huespedSocio)
+    {
+        SetupClient(appState.ClubKey);
+        var agregarEvent = new AgregarHuespedEvent( socioId,appState.UserName, huespedSocio );
+        await _httpClient.PostAsJsonAsync($"Socio/huesped/{socioId}", agregarEvent);
+        return await _httpClient.GetFromJsonAsync<Socio>($"Socio/{socioId}");  
+    }
+    public async Task<Socio> ReActivateSocioHuesped(AppState appState, long socioId,  HuespedSocio huespedSocio)
+    {
+        SetupClient(appState.ClubKey);
+        var agregarEvent = new AgregarHuespedEvent(socioId,appState.UserName, huespedSocio );
+        await _httpClient.PostAsJsonAsync($"Socio/huesped/activar", agregarEvent);
+        return await _httpClient.GetFromJsonAsync<Socio>($"Socio/{socioId}");  
+    }
+    public async Task<Socio> DeActivateSocioHuesped(AppState appState, long socioId,  HuespedSocio huespedSocio)
+    {
+        SetupClient(appState.ClubKey);
+        var agregarEvent = new AgregarHuespedEvent( socioId,appState.UserName, huespedSocio );
+        await _httpClient.PostAsJsonAsync($"Socio/huesped/cancelar", agregarEvent);
+        return await _httpClient.GetFromJsonAsync<Socio>($"Socio/{socioId}");  
+    }
+    
     public async Task<Socio> DeleteAdicional(string apiKey, long socioId, long adicionalId)
     {
         SetupClient(apiKey);

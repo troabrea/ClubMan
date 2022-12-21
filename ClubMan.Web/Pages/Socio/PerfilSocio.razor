@@ -10,6 +10,7 @@
     <ToolbarItems>
             @if(_socio != null && _socio.SolicitudId > 0) {
                 <Bar Mode="BarMode.Horizontal" Breakpoint="Breakpoint.Widescreen">
+                    <VisitaSocio Socio="@_socio"/>
                     <BarMenu >
                         <BarEnd>
                             <BarDropdown RightAligned="true">
@@ -18,12 +19,15 @@
                                 </BarDropdownToggle>
                                 <BarDropdownMenu>
                                     <BarItem>
-                                        <Button Disabled="true" >Estado de Cuenta</Button>
+                                        <Button Disabled="true">Estado de Cuenta</Button>
                                     </BarItem>
                                     <BarItem>
-                                        <Button Clicked="ShowEditDialog" >Editar</Button>
+                                        <Button Clicked="ShowInvitados">Invitados Recientes</Button>
                                     </BarItem>
                                     <BarDropdownDivider/>
+                                    <BarItem>
+                                        <Button Clicked="ShowEditDialog">Editar Generales</Button>
+                                    </BarItem>
                                     <BarItem>
                                         <Button Clicked="DoShowSolicitud">Ver Solicitud</Button>
                                     </BarItem>
@@ -41,17 +45,23 @@
             <PerfilSocioEncabezado Socio="_socio"/>
             <Tabs Margin="Margin.Is1.FromTop" @bind-SelectedTab="_selectedTab">
                 <Items>
-                    <Tab Name="socio">Información del Socio</Tab>
+                    <Tab Name="socio">
+                        <Icon Name="IconName.Info"/> Información del Socio
+                    </Tab>
                     <Tab Name="dependientes">
-                        Dependientes
+                        <Icon Name="IconName.Baby"/> Dependientes
                         <Badge Color="Color.Primary" Pill>@_socio.Dependientes.Count</Badge>
                     </Tab>
                     <Tab Name="adicionales">
-                        Adicionales
+                        <Icon Name="IconName.HandsHelping"/> Adicionales
                         <Badge Color="Color.Primary" Pill>@_socio.Adicionales.Count</Badge>
                     </Tab>
+                    <Tab Name="huespedes">
+                        <Icon Name="IconName.UserFriends"/> Huespedes
+                        <Badge Color="Color.Primary" Pill>@_socio.Huespededes.Count</Badge>
+                    </Tab>
                     <Tab Name="embarcaciones">
-                        Embarcaciones
+                        <Icon Name="IconName.SwimmingPool"/> Embarcaciones
                         <Badge Color="Color.Primary" Pill>@_socio.Embarcaciones.Count</Badge>
                     </Tab>
                     <Tab Name="eventos">
@@ -67,6 +77,9 @@
                     </TabPanel>
                     <TabPanel Name="adicionales">
                         <PerfilSocioAdicionales OnSocioChanged="(soc) => { _socio = soc; StateHasChanged(); }" Socio="_socio"/>
+                    </TabPanel>
+                    <TabPanel Name="huespedes">
+                        <PerfilSocioHuespedes OnSocioChanged="(soc) => { _socio = soc; StateHasChanged(); }" Socio="_socio"/>
                     </TabPanel>
                     <TabPanel Name="embarcaciones">
                         <PerfilSocioEmbarcaciones Socio="_socio"/>
@@ -95,11 +108,25 @@
     </ModalContent>
 </Modal>
 
+<Modal @ref="_invitacionesDialog" ShowBackdrop="true" RenderMode="ModalRenderMode.LazyReload">
+    <ModalContent Size="ModalSize.ExtraLarge" Centered="true">
+        <ModalHeader>
+            <ModalTitle>@("Invitados Recientes")</ModalTitle>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalBody>
+            <PerfilSocioInvitados Socio="_socio"></PerfilSocioInvitados>
+        </ModalBody>
+        
+    </ModalContent>
+    
+</Modal>
 
 @code {
 
     bool _isBusy;
     Modal _editDialog;
+    Modal _invitacionesDialog;
     Socio _editRow = new();
     
     string _selectedTab = "socio";
@@ -156,6 +183,11 @@
     private void DoShowSolicitud()
     {
         NavigationManager.NavigateTo($"DetalleSolicitud/{_socio.SolicitudId}");
+    }
+
+    private void ShowInvitados()
+    {
+        _invitacionesDialog.Show();
     }
 
 }

@@ -18,9 +18,32 @@ public class EventoController : TenantController
     {
         _logger = logger;
     }
+    [HttpGet(Name = "GetEventos")]
+    public async Task<IEnumerable<EventoViewModel>> Get()
+    {
+        using var session = _store.OpenSession(TenantId);
+        Socio socio = null;
+        var batch = session.CreateBatchQuery();
+        var localidades = batch.Query<Localidad>().ToList();
+        var instalaciones = batch.Query<Instalacion>().ToList();
+        var eventos = batch.Query<EventoDeSocio>()
+            .Include<Socio>(x => x.SocioId, x=> socio = x)
+            .Where(x => x.FechaHora >= DateTime.Today && x.Estatus == EstatusEvento.Aprobado )
+            .ToList();
 
-    [HttpGet("{socioId}", Name = "GetEventos")]
-    public async Task<IEnumerable<EventoViewModel>> Get(long socioId)
+        await batch.Execute();
+        
+        return eventos.Result.Select(x => new EventoViewModel()
+        {
+            Id = x.Id,
+            Evento = x,
+            Instalacion = instalaciones.Result.First(r => r.Id == x.InstalacionId),
+            Localidad = localidades.Result.First(l => l.Id == instalaciones.Result.First(r => r.Id == x.InstalacionId).LocalidadId ),
+            Socio = socio
+        });
+    }
+    [HttpGet("{socioId}", Name = "GetEventosSocio")]
+    public async Task<IEnumerable<EventoViewModel>> GetSocio(long socioId)
     {
         using var session = _store.OpenSession(TenantId);
         Socio socio = null;

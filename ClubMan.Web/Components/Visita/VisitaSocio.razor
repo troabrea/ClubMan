@@ -1,0 +1,45 @@
+@inject IApiService ApiService
+
+@if (_visitasSocio == null)
+{
+    <Loading/>
+}
+else
+{
+    <Table FullWidth="false" Width="Width.Is75" Bordered="true" Narrow="true">
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Visitas</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Socio</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Dep.</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Inv.</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Otros</TableHeaderCell>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            <TableRow>
+                <TableRowCell TextAlignment="TextAlignment.Center" TextWeight="TextWeight.Bold">@_visitasSocio.Cantidad</TableRowCell>
+                <TableRowCell TextAlignment="TextAlignment.Center">@_visitasSocio.CantidadPrincipal</TableRowCell>
+                <TableRowCell TextAlignment="TextAlignment.Center">@_visitasSocio.CantidadDependientes</TableRowCell>
+                <TableRowCell TextAlignment="TextAlignment.Center">@_visitasSocio.CantidadInvitados</TableRowCell>
+                <TableRowCell TextAlignment="TextAlignment.Center">@(_visitasSocio.CantidadAdicionales + _visitasSocio.CantidadHuespedes)</TableRowCell>
+            </TableRow>
+        </TableBody>
+    </Table>
+}
+
+@code {
+    [Parameter] public Socio Socio { get; set; }
+    [CascadingParameter] public AppState AppState { get; set; }
+
+    VisitasSocio _visitasSocio;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (AppState != null && !String.IsNullOrEmpty(AppState.ClubKey))
+        {
+            _visitasSocio = await ApiService.GetVisitasDeSocio(AppState.ClubKey, Socio.Id);
+        }
+    }
+
+}

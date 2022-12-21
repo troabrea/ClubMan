@@ -1,0 +1,246 @@
+@inject IApiService ApiService
+@inject IMessageService MessageService
+@inject INotificationService NotificationService
+
+@if(Socio != null) {
+    <DataGrid TItem="HuespedSocio" Data="@Socio.Huespededes"
+              CommandMode="DataGridCommandMode.ButtonRow"
+              Filterable="false"
+              FilterMethod="DataGridFilterMethod.Contains"
+              ShowPager="true"
+              ShowPageSizes="false"
+              RowClicked="HuespedClicked"
+              PageSize="10"
+              RowSelectable="(r) => false">
+        <DataGridColumns>
+            <DataGridColumn Field="Id" Caption="Id" SortDirection="Blazorise.SortDirection.Ascending"/>
+            <DataGridColumn Field="NumeroCarnet" Caption="Carnet No."/>
+            <DataGridColumn Field="NumeroIdentidad" Caption="Identidad"/>
+            <DataGridColumn Field="Nombre" Caption="Nombre"/>
+            <DataGridColumn Field="Desde" Caption="Desde" DisplayFormat="{0:dd-MMM-yyyy}"/>
+            <DataGridColumn Field="Hasta" Caption="Hasta" DisplayFormat="{0:dd-MMM-yyyy}"/>
+            <DataGridColumn Field="Estatus" Caption="Estatus"/>
+        </DataGridColumns>
+        <ButtonRowTemplate>
+            <Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="DoShowAdd">
+                <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+            </Button>
+        </ButtonRowTemplate>
+        <EmptyTemplate>
+            <EmptyView/>
+        </EmptyTemplate>
+    </DataGrid>
+}
+else
+{
+    <EmptyView/>
+}
+
+<Modal @ref="editDialog">
+    <ModalContent Size="ModalSize.ExtraLarge" Centered>
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nuevo Huesped" : "Editando Huesped")</ModalTitle>
+            <CloseButton Clicked="DoRevertEdit"/>
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual">
+                <Row>
+                    <Column ColumnSize="ColumnSize.Is2">
+                        <FigureImage Style="height: 100px;width: 100px" Source="@(String.IsNullOrEmpty(_editRow.FotoUrl) ? "/nophoto.jpg" : _editRow.FotoUrl)"/>
+                        <Field>
+                            <FieldBody>
+                                @if (_editRow.Estatus == EstatusMovimiento.Aprobado)
+                                {
+                                    <Heading TextAlignment="TextAlignment.Start" TextWeight="TextWeight.Default" Size="HeadingSize.Is5" TextColor="TextColor.Success">@_editRow.Estatus</Heading>
+                                }
+                                else if (_editRow.Estatus == EstatusMovimiento.Pendiente)
+                                {
+                                    <Heading TextAlignment="TextAlignment.Start" TextWeight="TextWeight.Default" Size="HeadingSize.Is5" TextColor="TextColor.Black50">@_editRow.Estatus</Heading>
+                                }
+                                else
+                                {
+                                    <Heading TextAlignment="TextAlignment.Start" TextWeight="TextWeight.Default" Size="HeadingSize.Is5" TextColor="TextColor.Danger">@_editRow.Estatus</Heading>
+                                }
+                            </FieldBody>
+                        </Field>
+                    </Column>
+                    <Column ColumnSize="ColumnSize.Is10">
+                        <Fields Margin="Margin.Is1.FromTop">
+                            
+                            <Field Horizontal ColumnSize="ColumnSize.Is12">
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Cédula/Pasaporte</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <TextEdit Readonly="@_isReadOnly" @bind-Text="_editRow.NumeroIdentidad"></TextEdit>
+                                </FieldBody>
+                            </Field>
+                            <Field Horizontal ColumnSize="ColumnSize.Is12">
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Parentesco</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <TextEdit ReadOnly="@_isReadOnly" @bind-Text="_editRow.Parentesco"/>
+                                </FieldBody>
+                            </Field>
+                            <Field Horizontal ColumnSize="ColumnSize.Is12">
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Nombre</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <TextEdit Readonly="@_isReadOnly" @bind-Text="_editRow.Nombre"></TextEdit>
+                                </FieldBody>
+                            </Field>
+                        </Fields>
+                        <Fields Margin="Margin.Is1.FromTop">
+                            <Field Horizontal="false" ColumnSize="ColumnSize.Is6">
+                                <FieldLabel ColumnSize="ColumnSize.Is5">Desde</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is7">
+                                    <DatePicker Readonly="@_isReadOnly" DisplayFormat="dd-MMM-yyyy" @bind-Date="_editRow.Desde"/>
+                                </FieldBody>
+                            </Field>
+                            <Field  ColumnSize="ColumnSize.Is6">
+                                <FieldLabel ColumnSize="ColumnSize.Is5">Hasta</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is7">
+                                    <DatePicker Readonly="@_isReadOnly" DisplayFormat="dd-MMM-yyyy" @bind-Date="_editRow.Hasta"/>
+                                </FieldBody>
+                            </Field>
+                        </Fields>
+                    </Column>
+                </Row>
+                
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                @if (_editRow.Estatus == EstatusMovimiento.Pendiente)
+                {
+                    <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+                } else if (_editRow.Estatus == EstatusMovimiento.Aprobado)
+                {
+                    <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoCancelDependiente">Cancelar Carnet</Button>
+                }
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    Modal editDialog;
+    bool isCreating;
+    bool _isBusy;
+    bool _isReadOnly;
+    Validations editValidator;
+    
+    HuespedSocio _editRow = new();
+    
+    Task DoRevertEdit()
+    {
+        editDialog.Hide();
+        return Task.CompletedTask;
+    }
+    
+    [CascadingParameter] public AppState AppState { get; set; }
+    [Parameter] public Action<Socio> OnSocioChanged { get; set; }
+    [Parameter]
+    public Socio Socio { get; set; }
+    
+    protected override void OnParametersSet()
+    {
+        StateHasChanged();
+        base.OnParametersSet();
+    }
+    
+    private void DoShowAdd()
+    {
+        _isReadOnly = false;
+        isCreating = true;
+        _editRow = new HuespedSocio() { Desde = DateTime.Today, Hasta = DateTime.Today.AddDays(15)};
+        editDialog.Show();
+    }
+
+    private async Task DoCancelDependiente()
+    {
+        editDialog.Hide();
+        if (await MessageService.Confirm("Seguro que desea solicitar la cancelación de este carnet?", "Confirme"))
+        {
+            Socio = await ApiService.DeActivateSocioHuesped(AppState, Socio.Id, _editRow);
+            StateHasChanged();
+            OnSocioChanged?.Invoke(Socio);
+        }
+    }
+    private async Task HuespedClicked(DataGridRowMouseEventArgs<HuespedSocio> arg)
+    {
+        _editRow = arg.Item with {};
+        if (_editRow.Estatus == EstatusMovimiento.Rechazado)
+        {
+            if (await MessageService.Confirm("Este registro esta 'Rechazado', desea someter el regitro nuevamente para  aprobación?", "Confirme"))
+            {
+                Socio = await ApiService.ReActivateSocioHuesped(AppState, Socio.Id, _editRow);
+                StateHasChanged();
+                OnSocioChanged?.Invoke(Socio);
+            }
+        }
+        else
+        {
+            _isReadOnly = (_editRow.Estatus != EstatusMovimiento.Pendiente);
+            isCreating = false;
+            await editDialog.Show();
+        }  
+    }
+    
+    async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        
+        if (!await editValidator.ValidateAll())
+        {
+            return;
+        }
+
+        await editValidator.ClearAll();
+        
+        try
+        {
+            _isBusy = true;
+            Socio = await ApiService.UpsertSocioHuesped(AppState, Socio.Id, _editRow);
+            StateHasChanged();
+            OnSocioChanged?.Invoke(Socio);
+            editDialog.Hide();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            NotificationService.Error("Ha ocurrido un error actualizando registro, favor revisar e intentar nuevamente.", "Alerta");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+        
+        
+    }
+    
+    async Task DoDelete()
+    {
+        editDialog.Hide();
+        if ( !await MessageService.Confirm( "Seguro que desea borrar esta persona dependiente de este socio?", "Confirme" ) )
+        {
+            return;
+        }
+        
+        try
+        {
+            _isBusy = true;
+            Socio = await ApiService.DeActivateSocioHuesped(AppState, Socio.Id, _editRow);
+            StateHasChanged();
+            OnSocioChanged?.Invoke(Socio);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            NotificationService.Error("Ha ocurrido un error borrando registro, favor revisar e intentar nuevamente.", "Alerta");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+        
+    }
+}

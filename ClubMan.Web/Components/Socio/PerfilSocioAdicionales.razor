@@ -16,7 +16,7 @@
         <DataGridColumn Field="TipoAdicional" Caption="Tipo"/>
         <DataGridColumn Field="Descripcion" Caption="Descripción"/>
         <DataGridColumn Field="Nombre" Caption="Nombre"/>
-        <DataGridColumn Field="NumeroIdentidad" Caption="Indentidad"/>
+        <DataGridColumn Field="NumeroIdentidad" Caption="Identidad"/>
         <DataGridColumn Field="Estatus" Caption="Estatus"/>
     </DataGridColumns>
     <ButtonRowTemplate>
@@ -214,6 +214,7 @@
         else
         {
             _isReadOnly = (_editRow.Estatus != EstatusMovimiento.Pendiente);
+            isCreating = false;
             await editDialog.Show();
         }  
     }

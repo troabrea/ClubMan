@@ -3,6 +3,7 @@
 @inject INotificationService NotificationService
 @inject IApiService ApiService
 @using System.Collections.Immutable
+@using Syncfusion.XlsIO.Implementation.TemplateMarkers
 
 
 
@@ -13,8 +14,17 @@
             <Loading/>
         }
         
-        <SfSchedule TValue="ActividadViewModel" CurrentView="View.MonthAgenda" StartHour="10:00" DateFormat="dd-MMM-yyyy"  >
-            <ScheduleEventSettings AllowEditing="false" AllowAdding="false" AllowDeleting="false" TValue="ActividadViewModel" DataSource="_actividades">
+        <Heading Margin="Margin.Is2.FromTop.Is2.FromBottom" TextColor="TextColor.Primary" Size="HeadingSize.Is5">Resumen Visitas</Heading>
+        
+        <ResumenVisitas/>
+        
+        <Heading Margin="Margin.Is2.FromTop.Is2.FromBottom" TextColor="TextColor.Primary" Size="HeadingSize.Is5">Calendario Actividades</Heading>
+
+        <SfSchedule TValue="CalendarioViewModel" CurrentView="View.MonthAgenda" StartHour="10:00" DateFormat="dd-MMM-yyyy">
+            <ScheduleResources  >
+                <ScheduleResource TItem="CalendarioResourceData" TValue="int[]" DataSource="@OwnersData" Field="OwnerId" Title="Owner" Name="Owners" TextField="OwnerText" IdField="Id" ColorField="OwnerColor" AllowMultiple="true"></ScheduleResource>
+            </ScheduleResources>
+            <ScheduleEventSettings AllowEditing="false" AllowAdding="false" AllowDeleting="false" TValue="CalendarioViewModel" DataSource="_actividades">
                 <ScheduleViews>
                     <ScheduleView Option="View.Day"></ScheduleView>
                     <ScheduleView Option="View.Week"></ScheduleView>
@@ -22,10 +32,11 @@
                     <ScheduleView Option="View.MonthAgenda"></ScheduleView>
                 </ScheduleViews>
                 <ScheduleField Id="@nameof(ActividadViewModel.Id)">
-                    <FieldSubject Name="Actividad.Titulo"></FieldSubject>
-                    <FieldLocation Name="Instalacion.Titulo"></FieldLocation>
-                    <FieldStartTime Name="StartTime"></FieldStartTime>
-                    <FieldEndTime Name="EndTime"></FieldEndTime>
+                    <FieldSubject Name="Titulo"></FieldSubject>
+                    <FieldLocation Name="Lugar"></FieldLocation>
+                    <FieldStartTime Name="HoraInicio"></FieldStartTime>
+                    <FieldEndTime Name="HoraFin"></FieldEndTime>
+                    <FieldDescription Name="Nota"></FieldDescription>
                 </ScheduleField>
             </ScheduleEventSettings>
         </SfSchedule>
@@ -35,17 +46,46 @@
 </MainContent>
 
 @code {
+    
+    public List<CalendarioResourceData> OwnersData { get; set; } = new List<CalendarioResourceData>
+    {
+        new CalendarioResourceData{ OwnerText = "Club", Id = 1, OwnerColor = "#4054b2" },
+        new CalendarioResourceData{ OwnerText = "Socio", Id = 2, OwnerColor = "#3ab57a" },
+    };
+    
     [CascadingParameter]
     private AppState AppState { get; set; }
     bool _isLoading = false;
     
-    List<ActividadViewModel> _actividades;
+    List<CalendarioViewModel> _actividades;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender || _actividades == null || _actividades.Count == 0)
         {
-            _actividades = await ApiService.GetActividades(AppState.ClubKey);
+            var actividadesClub = await ApiService.GetActividades(AppState.ClubKey);
+            var actividadesSocio = await ApiService.GetEventos(AppState.ClubKey);
+            _actividades = new List<CalendarioViewModel>();
+            _actividades.AddRange(actividadesClub.Select(x => new CalendarioViewModel()
+            {
+                OwnerId = 1,
+                ReferenciaId = x.Id.ToString(),
+                Lugar = x.Instalacion.Titulo,
+                Titulo = x.Actividad.Titulo,
+                HoraInicio = x.StartTime,
+                HoraFin = x.EndTime,
+                Nota = string.Empty
+            })); 
+            _actividades.AddRange(actividadesSocio.Select(x => new CalendarioViewModel()
+            {
+                OwnerId = 2,
+                ReferenciaId = x.Id.ToString(),
+                Lugar = x.Instalacion.Titulo,
+                Titulo = x.Evento.Descripcion,
+                HoraInicio = x.StartTime,
+                HoraFin = x.EndTime,
+                Nota = $"{x.Socio.Nombre} - {x.Socio.NumeroCarnet}"
+            })); 
             StateHasChanged();
         }
         await base.OnAfterRenderAsync(firstRender);

@@ -14,6 +14,8 @@ public static class MovimientoServiceFactory
             TipoMovimiento.AgregarDependiente => new AgregarDependienteService(session, movimientoSocio, carnetService),
             TipoMovimiento.QuitarDependiente => new QuitarDependienteService(session, movimientoSocio, carnetService),
             TipoMovimiento.SolicitarActividad => new SolicitarActividadService(session, movimientoSocio),
+            TipoMovimiento.SolicitarHuesped => new AgregarHuespedService(session, movimientoSocio, carnetService),
+            TipoMovimiento.QuitarHuesped => new QuitarHuespedService(session, movimientoSocio, carnetService),
             _ => new MovimientoService(session, movimientoSocio)
         };
     }
