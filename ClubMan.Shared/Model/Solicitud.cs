@@ -52,6 +52,10 @@ public record Embarcacion
     public double Eslora { get; set; }
     public double Manga { get; set; }
     public String Localizacion { get; set; }
+    public string Matricula { get; set; }
+    public string Seguro { get; set; }
+    public string PermisoNavegacion { get; set; }
+    public DateTime Fecha { get; set; }
 }
 
 public record Revision

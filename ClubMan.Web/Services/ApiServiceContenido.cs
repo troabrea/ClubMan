@@ -50,7 +50,11 @@ public partial class ApiService : IApiService
         SetupClient(apiKey);
         return _httpClient.GetFromJsonAsync<List<Servicio>>("Servicio");
     }
-
+    public Task<List<Pregunta>> GetPreguntas(string apiKey)
+    {
+        SetupClient(apiKey);
+        return _httpClient.GetFromJsonAsync<List<Pregunta>>("Pregunta");
+    }
     public Task<List<Localidad>> GetLocalidades(string apiKey)
     {
         SetupClient(apiKey);
@@ -102,16 +106,28 @@ public partial class ApiService : IApiService
         return _httpClient.GetFromJsonAsync<List<Usuario>>($"Admin/Usuarios");
     }
 
-    public Task UpsertUsuario(string apiKey, Usuario usuario)
+    public Task UpsertUsuario(string apiKey, Usuario usuario, bool isNew)
     {
         SetupClient(apiKey);
-        return _httpClient.PostAsJsonAsync("Admin/Usuarios", usuario);
+        return isNew ? _httpClient.PostAsJsonAsync("Admin/Usuarios", usuario) : _httpClient.PutAsJsonAsync("Admin/Usuarios", usuario);
+    }
+    
+    public Task<List<UsuarioApp>> GetUsuariosApp(string apiKey)
+    {
+        SetupClient(apiKey);
+        return _httpClient.GetFromJsonAsync<List<UsuarioApp>>($"UsuarioApp");
     }
 
-    public Task UpsertLocalidad(string apiKey, Localidad localidad)
+    public Task UpsertUsuarioApp(string apiKey, UsuarioApp usuario, bool isNew)
     {
         SetupClient(apiKey);
-        return _httpClient.PostAsJsonAsync("Localidad", localidad);
+        return isNew ? _httpClient.PostAsJsonAsync("UsuarioApp", usuario) : _httpClient.PutAsJsonAsync("UsuarioApp", usuario);
+    }
+    
+    public Task UpsertLocalidad(string apiKey, Localidad localidad, bool isNew)
+    {
+        SetupClient(apiKey);
+        return isNew ? _httpClient.PostAsJsonAsync("Localidad", localidad) : _httpClient.PutAsJsonAsync("Localidad", localidad);
     }
 
     public Task RemoveLocalidad(string apiKey, Guid localidadId)
@@ -120,10 +136,10 @@ public partial class ApiService : IApiService
         return _httpClient.DeleteAsync($"Localidad/{localidadId}");
     }
 
-    public Task UpsertServicio(string apiKey, Servicio servicio)
+    public Task UpsertServicio(string apiKey, Servicio servicio, bool isNew)
     {
         SetupClient(apiKey);
-        return _httpClient.PostAsJsonAsync("Servicio", servicio);
+        return isNew ? _httpClient.PostAsJsonAsync("Servicio", servicio) : _httpClient.PutAsJsonAsync("Servicio", servicio);
     }
 
     public Task RemoveServicio(string apiKey, Guid servicioId)
@@ -131,17 +147,27 @@ public partial class ApiService : IApiService
         SetupClient(apiKey);
         return _httpClient.DeleteAsync($"Servicio/{servicioId}");
     }
-
-    public Task UpsertNoticia(string apiKey, Noticia noticia)
+    public Task UpsertPregunta(string apiKey, Pregunta pregunta, bool isNew)
     {
         SetupClient(apiKey);
-        return _httpClient.PostAsJsonAsync("Noticia", noticia);
+        return isNew ? _httpClient.PostAsJsonAsync("Pregunta", pregunta) : _httpClient.PutAsJsonAsync("Pregunta", pregunta);
     }
 
-    public Task UpsertMensaje(string apiKey, Mensaje mensaje)
+    public Task RemovePregunta(string apiKey, Guid preguntaId)
     {
         SetupClient(apiKey);
-        return _httpClient.PostAsJsonAsync("Mensaje", mensaje);
+        return _httpClient.DeleteAsync($"Pregunta/{preguntaId}");
+    }
+    public Task UpsertNoticia(string apiKey, Noticia noticia, bool isNew)
+    {
+        SetupClient(apiKey);
+        return isNew ? _httpClient.PostAsJsonAsync("Noticia", noticia) : _httpClient.PutAsJsonAsync("Noticia", noticia);
+    }
+
+    public Task UpsertMensaje(string apiKey, Mensaje mensaje, bool isNew)
+    {
+        SetupClient(apiKey);
+        return isNew ? _httpClient.PostAsJsonAsync("Mensaje", mensaje) : _httpClient.PutAsJsonAsync("Mensaje", mensaje);
     }
 
     public Task RemoveNoticia(string apiKey, Guid noticiaId)
@@ -156,10 +182,10 @@ public partial class ApiService : IApiService
         return _httpClient.DeleteAsync($"Mensaje/{mensajeId}");
     }
 
-    public Task UpsertInstalacion(string apiKey, Instalacion instalacion)
+    public Task UpsertInstalacion(string apiKey, Instalacion instalacion, bool isNew)
     {
         SetupClient(apiKey);
-        return _httpClient.PostAsJsonAsync("Instalacion", instalacion);
+        return isNew ? _httpClient.PostAsJsonAsync("Instalacion", instalacion) : _httpClient.PutAsJsonAsync("Instalacion", instalacion);
     }
 
     public Task RemoveInstalacion(string apiKey, Guid instalacionId)
@@ -168,10 +194,10 @@ public partial class ApiService : IApiService
         return _httpClient.DeleteAsync($"Instalacion/{instalacionId}");
     }
     
-    public Task UpsertActividad(string apiKey, Actividad actividad)
+    public Task UpsertActividad(string apiKey, Actividad actividad, bool isNew)
     {
         SetupClient(apiKey);
-        return _httpClient.PostAsJsonAsync("Actividad", actividad);
+        return isNew ? _httpClient.PostAsJsonAsync("Actividad", actividad) : _httpClient.PutAsJsonAsync("Actividad", actividad);
     }
 
     public Task RemoveActividad(string apiKey, Guid actividadId)

@@ -12,6 +12,7 @@ public record Socio
     public long SolicitudId { get; set; }
     public String NumeroCarnet { get; set; }
     public TipoSocio TipoSocio { get; set; }
+    public int CantidadAcciones { get; set; }
     public DateTime FechaMembresia { get; set; }
     public String Nombre { get; set; }
     public String Empresa { get; set; }
@@ -86,7 +87,7 @@ public record Socio
             iDep++;
             socio.Dependientes.Add(new DependienteSocio()
             {
-                Id=iDep,
+                // Id=iDep,
                 NumeroCarnet = $"{socio.NumeroCarnet}-{iDep.ToString()}",
                 Celular = dep.Celular,
                 Email = dep.Email,

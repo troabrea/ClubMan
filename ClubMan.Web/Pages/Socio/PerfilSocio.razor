@@ -1,5 +1,6 @@
 @page "/PerfilSocio/{SocioId:long}"
 @using Border = Syncfusion.Blazor.Grids.Border
+@using ClubMan.Shared.Dto
 @inject IMessageService MessageService
 @inject NavigationManager NavigationManager
 @inject INotificationService NotificationService
@@ -8,9 +9,9 @@
 
 <DetailContent Title="@_title" IconName="IconName.Inbox" LoadDataAsync="DoLoadSocioAsync">
     <ToolbarItems>
-            @if(_socio != null && _socio.SolicitudId > 0) {
+            @if(_socio != null ) { //&&
                 <Bar Mode="BarMode.Horizontal" Breakpoint="Breakpoint.Widescreen">
-                    <VisitaSocio Socio="@_socio"/>
+                    <VisitaSocio Socio="@_socio" Cxc="_cxc"/>
                     <BarMenu >
                         <BarEnd>
                             <BarDropdown RightAligned="true">
@@ -18,9 +19,9 @@
                                     <Icon Name="IconName.MoreVertical"></Icon>
                                 </BarDropdownToggle>
                                 <BarDropdownMenu>
-                                    <BarItem>
-                                        <Button Disabled="true">Estado de Cuenta</Button>
-                                    </BarItem>
+                                    @* <BarItem> *@
+                                    @*     <Button Clicked="ShowCxc">Estado de Cuenta</Button> *@
+                                    @* </BarItem> *@
                                     <BarItem>
                                         <Button Clicked="ShowInvitados">Invitados Recientes</Button>
                                     </BarItem>
@@ -28,9 +29,12 @@
                                     <BarItem>
                                         <Button Clicked="ShowEditDialog">Editar Generales</Button>
                                     </BarItem>
-                                    <BarItem>
-                                        <Button Clicked="DoShowSolicitud">Ver Solicitud</Button>
-                                    </BarItem>
+                                    @if (_socio.SolicitudId > 0)
+                                    {
+                                        <BarItem>
+                                            <Button Clicked="DoShowSolicitud">Ver Solicitud</Button>
+                                        </BarItem>
+                                    }
                                 </BarDropdownMenu>
                             </BarDropdown>
                         </BarEnd>
@@ -42,7 +46,7 @@
     <ChildContent>
         @if (_socio != null)
         {
-            <PerfilSocioEncabezado Socio="_socio"/>
+            <PerfilSocioEncabezado Socio="_socio" />
             <Tabs Margin="Margin.Is1.FromTop" @bind-SelectedTab="_selectedTab">
                 <Items>
                     <Tab Name="socio">
@@ -67,6 +71,9 @@
                     <Tab Name="eventos">
                         <Icon Name="IconName.CalendarDay"></Icon> Eventos
                     </Tab>
+                    <Tab Name="cxc">
+                        <Icon Name="IconName.MoneyBillAlt"></Icon> CxC
+                    </Tab>
                 </Items>
                 <Content>
                     <TabPanel Name="socio">
@@ -87,6 +94,11 @@
                     <TabPanel Name="eventos">
                         <SocioEventos Socio="_socio"/>
                     </TabPanel>
+                    <TabPanel Name="cxc">
+                        <PerfilSocioCxc Socio="_socio" Cxc="_cxc"/>
+                    </TabPanel>
+                    
+                    
                 </Content>
             </Tabs>
         }
@@ -122,11 +134,26 @@
     
 </Modal>
 
+<Modal @ref="_cxcDialog" ShowBackdrop="true" RenderMode="ModalRenderMode.LazyReload">
+    <ModalContent Size="ModalSize.ExtraLarge" Centered="true">
+        <ModalHeader>
+            <ModalTitle>@("Estado de Cuenta")</ModalTitle>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalBody>
+            <PerfilSocioCxc Socio="_socio" Cxc="_cxc"></PerfilSocioCxc>
+        </ModalBody>
+        
+    </ModalContent>
+    
+</Modal>
+
 @code {
 
     bool _isBusy;
     Modal _editDialog;
     Modal _invitacionesDialog;
+    Modal _cxcDialog;
     Socio _editRow = new();
     
     string _selectedTab = "socio";
@@ -144,6 +171,8 @@
     [Parameter] public long SocioId { get; set; }
     Socio _socio;
 
+    List<FacturaDto> _cxc = new();
+    
     private void ShowEditDialog()
     {
         _editRow = _socio with{};
@@ -173,7 +202,9 @@
     
     private async Task DoLoadSocioAsync()
     {
-        if(SocioId > 0) {
+        if(SocioId > 0)
+        {
+            _cxc = await ApiService.GetEstadoDeCuenta(AppState.ClubKey, SocioId);
             _socio = await ApiService.GetSocio(AppState.ClubKey, SocioId);
             // _title = $"Perfíl de Socio - {_socio.NumeroCarnet} - {_socio.EstatusMembresia}";
             StateHasChanged();
@@ -189,5 +220,8 @@
     {
         _invitacionesDialog.Show();
     }
-
+    private void ShowCxc()
+    {
+        _cxcDialog.Show();
+    }
 }

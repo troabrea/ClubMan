@@ -1,0 +1,31 @@
+@using ClubMan.Shared.Dto
+
+<DataGrid TItem="FacturaDto" Data="@Cxc"
+          Filterable="false"
+          FilterMethod="DataGridFilterMethod.Contains"
+          ShowPager="true"
+          ShowPageSizes="false"
+          PageSize="10"
+          RowSelectable="(r) => false">
+    <DataGridColumns>
+        <DataGridColumn Field="FechaFactura" Caption="Fecha" DisplayFormat="{0:dd-MMM-yyyy}"/>
+        <DataGridColumn Field="NumeroFactura" Caption="Numero"/>
+        <DataGridColumn Field="Concepto" Caption="Concepto"/>
+        <DataGridColumn Field="Total" Caption="Total" DisplayFormat="{0:C2}"/>
+        <DataGridColumn Field="Pagado" Caption="Pagado" DisplayFormat="{0:C2}"/>
+        <DataGridColumn Field="Balance" Caption="Balance" DisplayFormat="{0:C2}"/>
+    </DataGridColumns>
+    <DataGridAggregates>
+        <DataGridAggregate Field="Balance" Aggregate="DataGridAggregateType.Sum" DisplayFormat="{0:C2}" />
+    </DataGridAggregates>
+    <EmptyTemplate>
+        <EmptyView/>
+    </EmptyTemplate>
+</DataGrid>
+
+@code {
+    [Parameter] public Socio Socio { get; set; }
+
+    [Parameter]
+    public List<FacturaDto> Cxc { get; set; }
+}

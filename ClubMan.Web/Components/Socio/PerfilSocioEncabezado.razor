@@ -1,5 +1,6 @@
 @inject IApiService ApiService
 @using Border = Blazorise.Border
+@using ClubMan.Shared.Dto
 <Container  Border="Border.Rounded" Background="Background.Light" Padding="Padding.Is2.FromStart.Is2.FromEnd.Is2.FromTop.Is0.FromBottom">
     <Row>
         <Column ColumnSize="ColumnSize.Is2">
@@ -58,8 +59,9 @@
 
 @code {
     [CascadingParameter] public AppState AppState { get; set; }
+    
     [Parameter] public Socio Socio { get; set; }
-
+    
     String _photoUrl = "/nophoto.jpg";
 
     protected override void OnParametersSet()

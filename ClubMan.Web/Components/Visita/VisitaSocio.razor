@@ -1,3 +1,4 @@
+@using ClubMan.Shared.Dto
 @inject IApiService ApiService
 
 @if (_visitasSocio == null)
@@ -14,6 +15,7 @@ else
                 <TableHeaderCell TextAlignment="TextAlignment.Center">Dep.</TableHeaderCell>
                 <TableHeaderCell TextAlignment="TextAlignment.Center">Inv.</TableHeaderCell>
                 <TableHeaderCell TextAlignment="TextAlignment.Center">Otros</TableHeaderCell>
+                <TableHeaderCell TextAlignment="TextAlignment.Center">Balance</TableHeaderCell>
             </TableRow>
         </TableHeader>
         <TableBody>
@@ -23,6 +25,7 @@ else
                 <TableRowCell TextAlignment="TextAlignment.Center">@_visitasSocio.CantidadDependientes</TableRowCell>
                 <TableRowCell TextAlignment="TextAlignment.Center">@_visitasSocio.CantidadInvitados</TableRowCell>
                 <TableRowCell TextAlignment="TextAlignment.Center">@(_visitasSocio.CantidadAdicionales + _visitasSocio.CantidadHuespedes)</TableRowCell>
+                <TableRowCell TextAlignment="TextAlignment.Center">@Cxc.Sum(x => x.Balance).ToString("C2")</TableRowCell>
             </TableRow>
         </TableBody>
     </Table>
@@ -31,7 +34,7 @@ else
 @code {
     [Parameter] public Socio Socio { get; set; }
     [CascadingParameter] public AppState AppState { get; set; }
-
+    [Parameter] public List<FacturaDto> Cxc { get; set; }
     VisitasSocio _visitasSocio;
 
     protected override async Task OnParametersSetAsync()

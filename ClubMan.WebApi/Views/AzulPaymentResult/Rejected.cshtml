@@ -1,0 +1,25 @@
+@model ClubMan.Shared.Model.Cobro
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <style>h1 {text-align: center; font-size: xxx-large}p {font-size: xx-large; text-align: center;}div {font-size: xx-large; text-align: center;}</style>
+</head>
+<body>
+<br/>
+<br/>
+<div>
+    <img width="180" height="180" src="https://barolitblobstorage.blob.core.windows.net/clubman/warning.png"/>
+</div>
+<h1>Pago no completado</h1>
+<p>Su pago no pudo ser completado.</p>
+<br/>
+<div>Tarjeta: @Model.NumeroTarjeta</div>
+<div>Mensaje: @Model.Mensaje</div>
+</body>
+</html>

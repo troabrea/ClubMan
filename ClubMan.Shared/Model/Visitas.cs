@@ -2,6 +2,18 @@ using ClubMan.Shared.Events;
 
 namespace ClubMan.Shared.Model;
 
+public record VisitaManual
+{
+    public String Id { get; set; }
+    public DateTime FechaHora { get; set; }
+    public String PorteroId { get; set; }
+    public String TipoIdentidad { get; set; }
+    public String NumeroIdentidad { get; set; }
+    public String Nombre { get; set; }
+    public String Area { get; set; }
+    public String MotivoVisita { get; set; }
+    public String Comentario { get; set; }
+}
 
 public record Visitas
 {
@@ -15,7 +27,7 @@ public record Visitas
     public int Adicionales { get; set; }
     public int Invitados { get; set; }
 
-    void Apply(VisitaSocioRegistradaEvent visitaCarnet)
+    public void Apply(VisitaSocioRegistradaEvent visitaCarnet)
     {
         Ano = visitaCarnet.FechaHora.Year;
         Mes = visitaCarnet.FechaHora.Month;
@@ -37,6 +49,14 @@ public record Visitas
         }
 
     }
+    
+    public void Apply(VisitaInvitadoSocioRegistradaEvent visitaInvitado)
+    {
+        Ano = visitaInvitado.FechaHora.Year;
+        Mes = visitaInvitado.FechaHora.Month;
+        Cantidad += 1;
+        Invitados += 1;
+    }
 }
 
 public record VisitasSocio
@@ -53,7 +73,7 @@ public record VisitasSocio
     public int CantidadHuespedes { get; set; }
     public int CantidadInvitados { get; set; }
     
-    void Apply(VisitaCarnetRegistradaEvent visitaCarnet)
+    public void Apply(VisitaCarnetRegistradaEvent visitaCarnet)
     {
         Ano = visitaCarnet.FechaHora.Year;
         Mes = visitaCarnet.FechaHora.Month;
@@ -76,7 +96,7 @@ public record VisitasSocio
         }
     }
 
-    void Apply(VisitaAdicionalSocioRegistradaEvent visitaAdicional)
+    public void Apply(VisitaAdicionalSocioRegistradaEvent visitaAdicional)
     {
         Ano = visitaAdicional.FechaHora.Year;
         Mes = visitaAdicional.FechaHora.Month;
@@ -85,7 +105,7 @@ public record VisitasSocio
         CantidadAdicionales += 1;
     }
     
-    void Apply(VisitaInvitadoSocioRegistradaEvent visitaInvitado)
+    public void Apply(VisitaInvitadoSocioRegistradaEvent visitaInvitado)
     {
         Ano = visitaInvitado.FechaHora.Year;
         Mes = visitaInvitado.FechaHora.Month;
@@ -104,7 +124,7 @@ public record VisitasInvitado
     public string NumeroIdentidad { get; set; }
     public int Cantidad { get; set; }
     
-    void Apply(VisitaInvitadoRegistradaEvent visitaInvitado)
+    public void Apply(VisitaInvitadoRegistradaEvent visitaInvitado)
     {
         NumeroIdentidad = visitaInvitado.NumeroIdentidad;
         Ano = visitaInvitado.FechaHora.Year;

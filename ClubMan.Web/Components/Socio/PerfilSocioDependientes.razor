@@ -2,7 +2,7 @@
 @inject IMessageService MessageService
 @inject INotificationService NotificationService
 
-@if(Socio != null && Socio.Dependientes.Any()) {
+@if(Socio != null ) {
     <DataGrid TItem="DependienteSocio" Data="@Socio.Dependientes"
               CommandMode="DataGridCommandMode.ButtonRow"
               Filterable="false"

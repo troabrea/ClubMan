@@ -1,3 +1,4 @@
+using ClubMan.Shared.Dto;
 using ClubMan.Shared.Events;
 using ClubMan.Shared.Model;
 using ClubMan.Shared.ViewModel;
@@ -13,22 +14,26 @@ public interface IApiService
     Task<List<Noticia>> GetAllNoticias(string apiKey);
     Task<List<Mensaje>> GetMensajes(string apiKey);
     Task<List<Mensaje>> GetAllMensajes(string apiKey);
+    Task<List<Pregunta>> GetPreguntas(string apiKey);
     Task<List<Servicio>> GetServicios(string apiKey);
     Task<List<Localidad>> GetLocalidades(string apiKey);
     Task<List<InstalacionViewModel>> GetInstalaciones(string apiKey);
     Task<List<ActividadViewModel>> GetActividades(string apiKey);
-    Task UpsertLocalidad(string apiKey, Localidad localidad);
+    Task UpsertLocalidad(string apiKey, Localidad localidad, bool isNew);
     Task RemoveLocalidad(string apiKey, Guid localidadId);
     
-    Task UpsertServicio(string apiKey, Servicio servicio);
+    Task UpsertServicio(string apiKey, Servicio servicio, bool isNew);
     Task RemoveServicio(string apiKey, Guid servicioId);
-    Task UpsertInstalacion(string apiKey, Instalacion instalacion);
+    Task UpsertPregunta(string apiKey, Pregunta pregunta, bool isNew);
+    Task RemovePregunta(string apiKey, Guid preguntaId);
+    
+    Task UpsertInstalacion(string apiKey, Instalacion instalacion, bool isNew);
     Task RemoveInstalacion(string apiKey, Guid instalacionId);
-    Task UpsertNoticia(string apiKey, Noticia noticia);
-    Task UpsertMensaje(string apiKey, Mensaje mensaje);
+    Task UpsertNoticia(string apiKey, Noticia noticia, bool isNew);
+    Task UpsertMensaje(string apiKey, Mensaje mensaje, bool isNew);
     Task RemoveNoticia(string apiKey, Guid noticiaId);
     Task RemoveMensaje(string apiKey, Guid mensajeId);
-    Task UpsertActividad(string apiKey, Actividad actividad);
+    Task UpsertActividad(string apiKey, Actividad actividad, bool isNew);
     Task RemoveActividad(string apiKey, Guid actividadId);
 
     #endregion
@@ -41,7 +46,9 @@ public interface IApiService
     Task<Politica> GetPoliticas(string apiKey);
     Task UpsertPoliticas(string apiKey, Politica politica);
     Task<List<Usuario>> GetUsuarios(string apiKey);
-    Task UpsertUsuario(string apiKey, Usuario usuario);
+    Task UpsertUsuario(string apiKey, Usuario usuario, bool isNew);
+    Task<List<UsuarioApp>> GetUsuariosApp(string apiKey);
+    Task UpsertUsuarioApp(string apiKey, UsuarioApp usuario, bool isNew);
 
     #endregion
 
@@ -83,12 +90,14 @@ public interface IApiService
     Task<List<MovimientoSocio>> GetAprobacionesPendientes(string apiKey);
     Task ProcesaMovimento(string apiKey, ProcesaMovimientoEvent procesaEvent);
 
+    Task<List<FacturaDto>> GetEstadoDeCuenta(string apiKey, long socioId);
+
     #endregion
 
     #region EventosDeSocio
     Task<List<EventoViewModel>> GetEventos(string apiKey);
     Task<List<EventoViewModel>> GetEventos(string apiKey, long socioId);
-    Task UpsertEvento(string apiKey, EventoDeSocio evento);
+    Task UpsertEvento(string apiKey, EventoDeSocio evento, bool isCreating);
     Task RemoveEvento(string apiKey, long eventoId);
 
     Task SometerEvento(AppState appState, EventoDeSocio eventoDeSocio);

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ClubMan.Shared.Model;
 
 public record Empresa
@@ -20,4 +22,21 @@ public record Empresa
     public String SecondaryColor { get; set; }
     
     public List<String> TiposMembresia { get; set; }
+
+    [JsonIgnore]
+    public string MerchantId { get; set; }
+    [JsonIgnore]
+    public string MerchantName { get; set; }
+    [JsonIgnore]
+    public string MerchantType { get; set; }
+    [JsonIgnore]
+    public string CurrencyCode { get; set; }
+    [JsonIgnore]
+    public string AuthKey { get; set; }
+    [JsonIgnore]
+    public bool UseSandbox { get; set; }
+    [JsonIgnore]
+    public String SandboxServiceUrl { get; set; }
+    [JsonIgnore]
+    public String ServiceUrl { get; set; }
 }

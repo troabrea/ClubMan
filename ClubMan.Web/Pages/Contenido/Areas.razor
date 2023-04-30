@@ -84,6 +84,14 @@
                         </FieldBody>
                     </Field>
                 </Validation>
+                <Field>
+                    <FieldLabel TextColor="TextColor.Black50">Menu Url</FieldLabel>
+                    <FieldBody>
+                        <TextEdit @bind-Text="_editRow.MenuUrl">
+                            <Feedback><ValidationError/></Feedback>
+                        </TextEdit>
+                    </FieldBody>
+                </Field>
                 <Fields>
                     <Field>
                         <FieldLabel ColumnSize="ColumnSize.Is4" TextColor="TextColor.Black50">Activo</FieldLabel>
@@ -101,6 +109,20 @@
                         <FieldLabel ColumnSize="ColumnSize.Is4" TextColor="TextColor.Black50">Capacidad</FieldLabel>
                         <FieldBody>
                             <NumericEdit TValue="int" @bind-value="_editRow.Capacidad"></NumericEdit>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+                <Fields>
+                    <Field ColumnSize="ColumnSize.Is8" >
+                        <FieldLabel TextColor="TextColor.Black50">Horario Disponiblidad</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Horario" />
+                        </FieldBody>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4">
+                        <FieldLabel  TextColor="TextColor.Black50">Costo Reserva</FieldLabel>
+                        <FieldBody>
+                            <NumericEdit TValue="decimal" @bind-value="_editRow.CostoReserva"></NumericEdit>
                         </FieldBody>
                     </Field>
                 </Fields>
@@ -159,7 +181,7 @@
         {
             if (!await editValidator.ValidateAll()) return;
             _isBusy = true;
-            await ApiService.UpsertInstalacion(AppState.ClubKey, _editRow);
+            await ApiService.UpsertInstalacion(AppState.ClubKey, _editRow, isCreating);
             await editDialog.Hide();
             _dataGrid.ReloadData();
             if (isCreating)

@@ -1,4 +1,5 @@
 using System.Text.Encodings.Web;
+using ClubMan.Shared.Dto;
 using ClubMan.Shared.Events;
 using ClubMan.Shared.Model;
 using ClubMan.Web.Components;
@@ -127,5 +128,9 @@ public partial class ApiService : IApiService
         result.EnsureSuccessStatusCode();
     }
 
-    
+    public Task<List<FacturaDto>> GetEstadoDeCuenta(string apiKey, long socioId)
+    {
+        SetupClient(apiKey);
+        return _httpClient.GetFromJsonAsync<List<FacturaDto>>($"Erp/EstadoDeCuenta/{socioId}");
+    }
 }

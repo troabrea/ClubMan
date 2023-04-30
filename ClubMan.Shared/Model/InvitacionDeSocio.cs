@@ -3,6 +3,7 @@ namespace ClubMan.Shared.Model;
 public record InvitacionDeSocio
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid SolicitudId { get; set; } = Guid.NewGuid();
     public EstatusInvitacion Estatus { get; set; }
     public long SocioId { get; set; }
     public String NumeroCarnet { get; set; }

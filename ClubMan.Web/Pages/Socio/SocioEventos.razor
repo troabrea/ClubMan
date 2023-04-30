@@ -18,14 +18,31 @@
             <DataGridColumn Field="Evento.Descripcion" Caption="Descripción"/>
             <DataGridColumn Field="Evento.FechaHora" Caption="Fecha y Hora">
                 <DisplayTemplate>
-                @{
-                    var item = (context as EventoViewModel);
-                    <Label>@item.Evento.FechaHora.ToString("dd-MMM-yyyy")</Label>
-                    <br/>
-                    <Label>@item.Evento.FechaHora.ToString("hh:mm tt") - @item.Evento.FechaHora.AddHours(item.Evento.Horas).ToString("hh:mm tt")</Label>
-                }
+                    @{
+                        var item = (context as EventoViewModel);
+                        <Label>@item.Evento.FechaHora.ToString("dd-MMM-yyyy")</Label>
+                        <br/>
+                        <Label>@item.Evento.FechaHora.ToString("hh:mm tt") - @item.Evento.FechaHora.AddHours(item.Evento.Horas).ToString("hh:mm tt")</Label>
+                    }
                 </DisplayTemplate>
             </DataGridColumn>
+            <DataGridColumn Field="Evento.Costo" Caption="Costo" DisplayFormat="{0:C2}"/>
+            <DataGridColumn Field="Evento.Pagado" Caption="Pagado">
+                <DisplayTemplate>
+                    @{
+                        var item = (context as EventoViewModel);
+                        <Check TValue="bool" Disabled="true" bind-Checked="item.Evento.Pagado"/>
+                    }
+                </DisplayTemplate>
+            </DataGridColumn>
+            @* <DataGridColumn Width="120px" TextAlign="TextAlign.Center" HeaderText="Pagado" Field="Evento.Pagado"> *@
+            @*     <DisplayTemplate> *@
+            @*         @{ *@
+            @*             var item = (context as EventoViewModel); *@
+            @*             <Check Disabled="true" TValue="bool" @bind-Checked="@item.Evento.Pagado"/> *@
+            @*         } *@
+            @*     </DisplayTemplate> *@
+            @* </DataGridColumn> *@
             <DataGridColumn Field="Evento.Estatus" Caption="Estatus"/>
         </DataGridColumns>
         <EmptyTemplate>
@@ -183,7 +200,7 @@ else
             if (!await editValidator.ValidateAll()) return;
             _isBusy = true;
             _editRow.FechaHora = Fecha.AddHours(Hora.TotalHours);
-            await ApiService.UpsertEvento(AppState.ClubKey, _editRow);
+            await ApiService.UpsertEvento(AppState.ClubKey, _editRow, isCreating);
             await ApiService.SometerEvento(AppState, _editRow);
             await editDialog.Hide();
             _eventos = await ApiService.GetEventos(AppState.ClubKey, Socio.Id);
@@ -216,7 +233,7 @@ else
             if (!await editValidator.ValidateAll()) return;
             _isBusy = true;
             _editRow.FechaHora = Fecha.AddHours(Hora.TotalHours);
-            await ApiService.UpsertEvento(AppState.ClubKey, _editRow);
+            await ApiService.UpsertEvento(AppState.ClubKey, _editRow, isCreating);
             await editDialog.Hide();
             _eventos = await ApiService.GetEventos(AppState.ClubKey, Socio.Id);
             if (isCreating)

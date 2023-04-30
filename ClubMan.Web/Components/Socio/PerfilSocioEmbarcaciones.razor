@@ -2,7 +2,7 @@
 @inject INotificationService NotificationService
 @inject IApiService ApiService
 
-@if (Socio != null && Socio.Embarcaciones.Any())
+@if (Socio != null )
 {
     <DataGrid TItem="Embarcacion" Data="@Socio.Embarcaciones"
               CommandMode="DataGridCommandMode.ButtonRow"
@@ -90,6 +90,37 @@ else
                         </FieldBody>
                     </Field>
                 </Validation>
+                <Fields>
+                    <Field >
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Matricula</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit  @bind-Text="_editRow.Matricula"/>
+                        </FieldBody>
+                    </Field>
+                
+                    <Field >
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Seguro</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit @bind-Text="_editRow.Seguro"/>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+                <Fields>
+                    <Field >
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Permiso</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <TextEdit  @bind-Text="_editRow.PermisoNavegacion"/>
+                        </FieldBody>
+                    </Field>
+                                
+                    <Field >
+                        <FieldLabel ColumnSize="ColumnSize.Is4">Fecha</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is8">
+                            <DateEdit @bind-Date="_editRow.Fecha"/>
+                        </FieldBody>
+                    </Field>
+                </Fields>
+                
             </Validations>
         </ModalBody>
         <ModalFooter >

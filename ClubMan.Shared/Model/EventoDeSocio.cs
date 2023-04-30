@@ -12,6 +12,10 @@ public record EventoDeSocio
     public int Personas { get; set; }
     public EstatusEvento Estatus { get; set; }
     public List<InvitadoEvento> Invitados { get; set; } = new();
+    public decimal Costo { get; set; }
+    public bool Pagado { get; set; }
+    public DateTime FechaPago { get; set; }
+    public String ReferenciaPago { get; set; }
 }
 
 public record InvitadoEvento

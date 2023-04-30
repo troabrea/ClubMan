@@ -1,0 +1,26 @@
+@model ClubMan.Shared.Model.Cobro
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <style>h1 {text-align: center; font-size: xxx-large}p {font-size: xx-large; text-align: center;}div {font-size: xx-large; text-align: center;}</style>
+</head>
+<body>
+<br/>
+<br/>
+<div>
+    <img width="180" height="180" src="https://barolitblobstorage.blob.core.windows.net/clubman/success.png"/>
+</div>
+<h1>Gracias por su pago</h1>
+@* <p>Hemos recibido su pago de: @Model.TotalPago.ToString("C2").</p> *@
+<p>Hemos recibido su pago satisfactoriamente.</p>
+<br/>
+<div>Tarjeta: @Model.NumeroTarjeta</div>
+<div>Referencia: @Model.NumeroConfirmacion</div>
+</body>
+</html>

@@ -133,7 +133,7 @@
         {
             if (!await editValidator.ValidateAll()) return;
             _isBusy = true;
-            await ApiService.UpsertServicio(AppState.ClubKey, _editRow);
+            await ApiService.UpsertServicio(AppState.ClubKey, _editRow, isCreating);
             await editDialog.Hide();
             _dataGrid.ReloadData();
             if (isCreating)

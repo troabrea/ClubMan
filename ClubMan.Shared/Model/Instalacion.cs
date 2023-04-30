@@ -9,4 +9,7 @@ public record Instalacion
     public string ImagenUrl { get; set; }
     public bool Activo { get; set; }
     public bool Reservable { get; set; }
+    public string MenuUrl { get; set; }
+    public decimal CostoReserva { get; set; }
+    public string Horario { get; set; }
 }

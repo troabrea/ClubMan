@@ -1,0 +1,160 @@
+@page "/preguntas"
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="Pregunta" Title="Preguntas" IconName="IconName.QuestionCircle" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd"  LoadDataAsync="() => ApiService.GetPreguntas(AppState.ClubKey)">
+    <Columns>
+        <GridColumn Width="110px" HeaderText="Orden" Field="@nameof(Pregunta.Orden)" />
+        <GridColumn HeaderText="Título" Field="@nameof(Pregunta.Titulo)"/>
+        <GridColumn HeaderText="Resumen" Field="@nameof(Pregunta.Resumen)"/>
+        <GridColumn Width="120px" HeaderText="Publicado" AllowFiltering="false" Field="@nameof(Pregunta.Publicado)">
+            <Template>
+                @{
+                    var item = (context as Pregunta);
+                    <Check Disabled="true" TValue="bool" @bind-Checked="@item.Publicado"/>
+                }
+            </Template>
+        </GridColumn>
+    </Columns>
+</ListContent>
+
+<Modal @ref="editDialog" Width="Width.Max100" Closed="async () => await editValidator.ClearAll()">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nuevo Servicio" : "Editando Servicio")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual" Model="_editRow" >
+                    <Fields>
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Orden</FieldLabel>
+                            <NumericEdit TValue="double"  @bind-Value="_editRow.Orden"/>
+                        </Field>
+                        <Field ColumnSize="ColumnSize.Is6">
+                            <FieldLabel TextColor="TextColor.Black50">Publicado en App</FieldLabel>
+                            <Check TValue="bool" @bind-Checked="_editRow.Publicado"></Check>
+                        </Field>
+                        
+                    </Fields>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Titulo</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Titulo">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Resumen</FieldLabel>
+                        <FieldBody>
+                            <MemoEdit @bind-Text="_editRow.Resumen">
+                                <Feedback><ValidationError/></Feedback>
+                            </MemoEdit>
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                @* <Validation Validator="ValidationRule.IsNotEmpty"> *@
+                @*     <Field> *@
+                @*         <FieldLabel TextColor="TextColor.Black50">Detalle Url</FieldLabel> *@
+                @*         <FieldBody> *@
+                @*             <TextEdit @bind-Text="_editRow.Url"> *@
+                @*                 <Feedback><ValidationError/></Feedback> *@
+                @*             </TextEdit> *@
+                @*         </FieldBody> *@
+                @*     </Field> *@
+                @* </Validation> *@
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    
+    ListContent<Pregunta> _dataGrid;
+    
+    private Modal editDialog;
+    private bool isCreating = false;
+    private bool _isBusy = false;
+    private Validations editValidator;    
+    private Pregunta _editRow = new();
+    
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+    
+    private void DoRowClicked(Pregunta obj)
+    {
+        isCreating = false;
+        _editRow = obj with {};
+        editDialog.Show();
+    }
+    
+    private void DoShowAdd()
+    {
+        isCreating = true;
+        _editRow = new Pregunta() {Publicado = true,};
+        editDialog.Show();
+    }
+    
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            await ApiService.UpsertPregunta(AppState.ClubKey, _editRow, isCreating);
+            await editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemovePregunta(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _dataGrid.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

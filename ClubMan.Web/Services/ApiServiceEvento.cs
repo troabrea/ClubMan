@@ -18,10 +18,10 @@ public partial class ApiService : IApiService
         return _httpClient.GetFromJsonAsync<List<EventoViewModel>>($"Evento/{socioId}");
     }
 
-    public Task UpsertEvento(string apiKey, EventoDeSocio evento)
+    public Task UpsertEvento(string apiKey, EventoDeSocio evento, bool isCreating)
     {
         SetupClient(apiKey);
-        return _httpClient.PostAsJsonAsync("Evento", evento);
+        return isCreating ? _httpClient.PostAsJsonAsync("Evento", evento) : _httpClient.PutAsJsonAsync("Evento", evento);
     }
 
     public Task RemoveEvento(string apiKey, long eventoId)

@@ -1,0 +1,124 @@
+@page "/UsuariosApp"
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="UsuarioApp" Title="Usuarios Aplicación" IconName="IconName.User" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd" LoadDataAsync="LoadData">
+    <Columns>
+        <GridColumn Field="@nameof(UsuarioApp.Rol)" HeaderText="Role"/>
+        <GridColumn Field="@nameof(UsuarioApp.Nombre)" HeaderText="Nombre"/>
+        <GridColumn Field="@nameof(UsuarioApp.UsuarioId)" HeaderText="Id de Usuario"/>
+    </Columns>
+    
+</ListContent>
+
+<Modal @ref="_editDialog" Shadow="Shadow.Default">
+    <ModalContent Size="ModalSize.Large" Centered>
+        <ModalHeader>
+            <ModalTitle>@(_isCreating ? "Nuevo Usuario" : "Editando Usuario")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="_editValidator" Mode="ValidationMode.Manual">
+                <Fields>
+                        <Validation Validator="ValidationRule.IsNotEmpty">
+                            <Field Horizontal="false" ColumnSize="ColumnSize.Is12">
+                                <FieldLabel TextColor="TextColor.Black50">Nombre</FieldLabel>
+                                <TextEdit @bind-Text="_editRow.Nombre" ReadOnly="@(!_isCreating)" Placeholder="Nombre"/>
+                            </Field>
+                        </Validation>
+                    <Field Horizontal="false" ColumnSize="ColumnSize.Is6">
+                        <FieldLabel TextColor="TextColor.Black50">Rol</FieldLabel>
+                        <RadioGroup @bind-CheckedValue="_editRow.Rol" TValue="String" Name="rol">
+                            <Radio Value="@("Portero")">Portero</Radio>
+                            <Radio Value="@("Manager")">Administrador</Radio>
+                        </RadioGroup>
+                    </Field>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field Horizontal="false" ColumnSize="ColumnSize.Is12">
+                            <FieldLabel TextColor="TextColor.Black50">Usuario Id</FieldLabel>
+                            <TextEdit @bind-Text="_editRow.UsuarioId" ReadOnly="@(!_isCreating)" Placeholder="Nombre"/>
+                        </Field>
+                    </Validation>
+                    <Validation Validator="ValidationRule.IsNotEmpty">
+                        <Field Horizontal="false" ColumnSize="ColumnSize.Is12">
+                            <FieldLabel TextColor="TextColor.Black50">Clave</FieldLabel>
+                            <TextEdit @bind-Text="_editRow.ClaveHash" Role="Blazorise.TextRole.Password" Placeholder="Clave"/>
+                        </Field>
+                    </Validation>
+                </Fields>
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>    
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code
+{
+    ListContent<UsuarioApp> _dataGrid;
+
+    private Modal _editDialog;
+    
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+
+    UsuarioApp _editRow = new UsuarioApp();
+    
+    Validations _editValidator;
+
+    private Task<List<UsuarioApp>> LoadData()
+    {
+        return ApiService.GetUsuariosApp(AppState.ClubKey);
+    }
+    
+    bool _isCreating;
+    
+    private void DoShowAdd()
+    {
+        _editRow = new UsuarioApp();
+        _editRow.EmpresaId = Guid.Parse(AppState.ClubKey);
+        _isCreating= true;
+        _editDialog.Show();
+    }
+    
+    bool _isBusy;
+    private void DoRowClicked(UsuarioApp obj)
+    {
+        _isCreating = false;
+        _editRow = obj with {};
+        _editDialog.Show();
+    }
+    
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await _editValidator.ValidateAll()) return;
+            _isBusy = true;
+            _editRow.ClaveSalt = _editRow.ClaveHash;
+            await ApiService.UpsertUsuarioApp(AppState.ClubKey, _editRow, _isCreating);
+            await _editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (_isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+}

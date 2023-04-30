@@ -92,7 +92,7 @@
             if (!await _editValidator.ValidateAll()) return;
             _isBusy = true;
             _editRow.ClaveSalt = _editRow.ClaveHash;
-            await ApiService.UpsertUsuario(AppState.ClubKey, _editRow);
+            await ApiService.UpsertUsuario(AppState.ClubKey, _editRow, _isCreating);
             await _editDialog.Hide();
             _dataGrid.ReloadData();
             if (_isCreating)
