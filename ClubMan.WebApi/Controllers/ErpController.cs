@@ -1,4 +1,3 @@
-using ClubMan.Api.Controllers;
 using ClubMan.Shared.Dto;
 using ClubMan.Shared.Model;
 using ClubMan.WebApi.Model;

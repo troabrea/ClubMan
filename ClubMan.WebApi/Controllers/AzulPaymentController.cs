@@ -1,5 +1,4 @@
 using System.Text;
-using ClubMan.Api.Controllers;
 using ClubMan.Shared.Dto;
 using ClubMan.Shared.Model;
 using ClubMan.WebApi.Infrastructure;
@@ -41,8 +40,7 @@ public class AzulPaymentController : TenantController
     [HttpPost]
     public async  Task<IActionResult> PostPayment(PaymentDto dto)
     {
-        var _empresa = await _db.Empresas.FirstAsync();
-        
+        // var _empresa = await _db.Empresas.FirstAsync();
         
         var cobro = new Cobro()
         {
@@ -62,6 +60,8 @@ public class AzulPaymentController : TenantController
         _db.Cobros.Add(cobro);
         await _db.SaveChangesAsync();
 
+        return Ok(cobro);
+        /*
         var baseUrl ="https://clubmanapi.barolit.net/api"; // "http://nauticoapi.barolit.net:85/api"; //  
         
         var responseRedirectUrl = $"{baseUrl}/AzulPayment/PaymentResult";
@@ -126,8 +126,11 @@ public class AzulPaymentController : TenantController
 
         post.Post();
         return Ok();
+        */
     }
     
+    
+    /*
     [HttpGet("PaymentResult")]
     [HttpPost("PaymentResult")]
     public async Task<IActionResult> PaymentResult()
@@ -251,4 +254,5 @@ public class AzulPaymentController : TenantController
             return RedirectToAction("Aborted", "AzulPaymentResult", "Error interno.");
         }
     }
+    */
 }

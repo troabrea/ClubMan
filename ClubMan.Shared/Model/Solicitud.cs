@@ -120,7 +120,17 @@ public record Solicitud
     public String SolicitudPara => String.IsNullOrEmpty(Beneficiario) ? Solicitante : $"{Solicitante} / {Beneficiario}";
 
     public int Edad => FechaNacimiento.Age();
-    
+    public static Solicitud Empty()
+    {
+        var sol = new Solicitud
+        {
+            EstatusSolicitud = EstatusSolicitud.Recibida,
+            FechaSolicitud = DateTime.Now.Date,
+            //
+            TipoSocio = TipoSocio.Numeral
+        };
+        return sol;
+    }
     public static Solicitud FromPdfForm(SolicitudPdfForm dto)
     {
         var sol = new Solicitud
@@ -337,4 +347,6 @@ public record Solicitud
         sol.NombreAsistente = dto.NombredeAsistente;
         sol.EmailAsitente = dto.Email_3;
     }
+
+    
 }

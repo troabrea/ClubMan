@@ -1,5 +1,3 @@
-using System.Xml.XPath;
-using ClubMan.WebApi.Services;
 using ClubMan.Shared.Events;
 using ClubMan.Shared.Model;
 using ClubMan.WebApi.Model;
@@ -7,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClubMan.Api.Controllers;
+namespace ClubMan.WebApi.Controllers;
 
 [ApiController]
 //[Authorize(Roles = "User")]
@@ -65,6 +63,27 @@ public class SocioController : TenantController
         socio.EmailTrabajo = _socio.EmailTrabajo;
         socio.NombreAsistente = _socio.NombreAsistente;
         socio.EmailAsitente = _socio.EmailAsitente;
+        //
+        await _db.SaveChangesAsync();
+        return socio;
+    }
+    
+    [HttpPost("membresia", Name = "CambiarMembresiaSocio")]
+    public async Task<Socio> UpdateMembresia(Socio _socio)
+    {
+        var socio = await _db.FindAsync<Socio>(_socio.Id);
+        var oldCarnet = socio.NumeroCarnet;
+        socio.TipoSocio = _socio.TipoSocio;
+        socio.NumeroCarnet = _socio.NumeroCarnet;
+        //
+        foreach (var dep in socio.Dependientes)
+        {
+            dep.NumeroCarnet = dep.NumeroCarnet.Replace(oldCarnet, _socio.NumeroCarnet);
+        }
+        foreach (var dep in socio.Huespededes)
+        {
+            dep.NumeroCarnet = dep.NumeroCarnet.Replace(oldCarnet, _socio.NumeroCarnet);
+        }
         //
         await _db.SaveChangesAsync();
         return socio;

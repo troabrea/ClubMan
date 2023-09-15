@@ -7,7 +7,15 @@
 @inject IApiService ApiService
 @inject ICloudStorageService CloudStorageService
 
-<ListContent @ref="_dataGrid" IconName="IconName.Inbox" OnRowClicked="DoShowDetail" OnAddButtonClicked="() => _uploadFile.Show()" TItem="Solicitud" Title="Solicitudes" LoadDataAsync="() => ApiService.GetSolicitudes(AppState.ClubKey)">
+<ListContent @ref="_dataGrid" IconName="IconName.Inbox" OnRowClicked="DoShowDetail" OnAddButtonClicked="DoAddNew" TItem="Solicitud" Title="Solicitudes" LoadDataAsync="() => ApiService.GetSolicitudes(AppState.ClubKey)">
+    <ToolbarItems>
+        <BarItem>
+            <Button Type="ButtonType.Link" Clicked="() => _uploadFile.Show()">
+                <Icon Name="IconName.FilePdf"></Icon>
+            </Button>
+        </BarItem>
+        
+    </ToolbarItems>
     <Columns>
         <GridColumn Field="Id" Width="100px" HeaderText="No."/>
         <GridColumn Field="FechaSolicitud" Width="120px" HeaderText="Fecha" Format="dd-MMM-yyyy"></GridColumn>
@@ -60,7 +68,7 @@
                 var pdfForm = System.Text.Json.JsonSerializer.Deserialize<SolicitudPdfForm>(json);
                 var sol = Solicitud.FromPdfForm(pdfForm);
                 sol.SolicitudPdfUrl = pdfUrl;
-                await ApiService.UpsertSolicitud(AppState.ClubKey, sol);
+                await ApiService.InsertSolicitud(AppState.ClubKey, sol);
                 _filePicker.Clear();
                 await _uploadFile.Hide();
                 //
@@ -79,4 +87,24 @@
         NavigationManager.NavigateTo($"/DetalleSolicitud/{sol.Id}");
     }
 
+    private void DoAddNew()
+    {
+        DoAddAsync();
+    }
+
+    private async void DoAddAsync()
+    {
+        try
+        {
+            var solId = await ApiService.CreateSolicitud(AppState.ClubKey);
+            NavigationManager.NavigateTo($"/DetalleSolicitud/{solId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            await NotificationService.Error("Ha ocurrido un error creando solicitud.", "Alerta");
+        }
+        
+    } 
+    
 }

@@ -29,6 +29,19 @@ public partial class ApiService : IApiService
         var result = await reqResult.Content.ReadFromJsonAsync<Socio>();
         return result;
     }
+
+    public async Task<Socio> UpdateSocioMembresia(string apiKey, Socio socio, TipoSocio nuevoTipoSocio,
+        string nuevoCarnet)
+    {
+        SetupClient(apiKey);
+        socio.TipoSocio = nuevoTipoSocio;
+        socio.NumeroCarnet = nuevoCarnet;
+        var reqResult = await _httpClient.PostAsJsonAsync("Socio/membresia", socio);
+        reqResult.EnsureSuccessStatusCode();
+        var result = await reqResult.Content.ReadFromJsonAsync<Socio>();
+        return result;
+    }
+
     public async Task<Socio> UpsertSocioAdicional(AppState appState, long socioId,  AdicionalSocio adicionalSocio)
     {
         SetupClient(appState.ClubKey);

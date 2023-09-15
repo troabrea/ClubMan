@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClubMan.Api.Controllers;
+namespace ClubMan.WebApi.Controllers;
 
 [ApiController]
 //[Authorize(Roles = "User")]

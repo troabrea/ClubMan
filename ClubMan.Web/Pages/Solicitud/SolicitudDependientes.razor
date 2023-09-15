@@ -1,4 +1,5 @@
 @inject IApiService ApiService
+@inject IMessageService MessageService
 @if(Solicitud != null && Solicitud.Dependientes.Any()) {
     <Container Margin="Margin.Is2">
         @foreach (var dep in Solicitud.Dependientes)
@@ -12,25 +13,32 @@
                     </Column>
                     <Column ColumnSize="ColumnSize.Is10">
                         <Fields Margin="Margin.Is1.FromTop">
-                            <Field Horizontal ColumnSize="ColumnSize.Is12">
+                            <Field Horizontal ColumnSize="ColumnSize.Is11">
                                 <FieldLabel ColumnSize="ColumnSize.Is3">Tipo Dependiente</FieldLabel>
                                 <FieldBody ColumnSize="ColumnSize.Is9">
-                                    <RadioGroup Disabled="true" TValue="TipoDependiente" @bind-CheckedValue="dep.TipoDependiente" Inline="true">
-                                        <Radio Disabled="true" ReadOnly="true" Value="@(TipoDependiente.Conyuge)">Conyuge</Radio>
-                                        <Radio Disabled="true" Value="@(TipoDependiente.Hijo)">Hijo(a)</Radio>
+                                    <RadioGroup Disabled="false" TValue="TipoDependiente" @bind-CheckedValue="dep.TipoDependiente" Inline="true">
+                                        <Radio Disabled="false" ReadOnly="false" Value="@(TipoDependiente.Conyuge)">Conyuge</Radio>
+                                        <Radio Disabled="false" Value="@(TipoDependiente.Hijo)">Hijo(a)</Radio>
                                     </RadioGroup>
+                                </FieldBody>
+                            </Field>
+                            <Field Horizontal Float="Float.End" ColumnSize="ColumnSize.Is1">
+                                <FieldBody>
+                                    <Button Color="Color.Danger" Clicked="async () => await DoDelete(dep)">
+                                        <Icon Name="IconName.Delete"/>
+                                    </Button>
                                 </FieldBody>
                             </Field>
                             <Field Horizontal ColumnSize="ColumnSize.Is12">
                                 <FieldLabel ColumnSize="ColumnSize.Is3">Nombre</FieldLabel>
                                 <FieldBody ColumnSize="ColumnSize.Is9">
-                                    <TextEdit ReadOnly="true" @bind-Text="dep.Nombre"></TextEdit>
+                                    <TextEdit ReadOnly="false" @bind-Text="dep.Nombre"></TextEdit>
                                 </FieldBody>
                             </Field>
                             <Field Horizontal ColumnSize="ColumnSize.Is12">
                                 <FieldLabel ColumnSize="ColumnSize.Is3" >Cédula / Pasaporte</FieldLabel>
                                 <FieldBody ColumnSize="ColumnSize.Is9">
-                                    <TextEdit ReadOnly="true" @bind-Text="dep.NumeroIndentidad"></TextEdit>
+                                    <TextEdit ReadOnly="false" @bind-Text="dep.NumeroIndentidad"></TextEdit>
                                 </FieldBody>
                             </Field>
                         </Fields>
@@ -40,21 +48,21 @@
                     <Field Horizontal ColumnSize="ColumnSize.Is4">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Nacimiento</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <DatePicker ReadOnly="true" DisplayFormat="dd-MMM-yyyy" @bind-Date="dep.FechaNacimiento"/>
+                            <DatePicker ReadOnly="false" DisplayFormat="dd-MMM-yyyy" @bind-Date="dep.FechaNacimiento"/>
                         </FieldBody>
                     </Field>
 
                     <Field Horizontal ColumnSize="ColumnSize.Is3">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Edad</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <NumericEdit ReadOnly="true" Value="dep.Edad"/>
+                            <NumericEdit ReadOnly="false" Value="dep.Edad"/>
                         </FieldBody>
                     </Field>
 
                     <Field Horizontal ColumnSize="ColumnSize.Is5">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Nacionalidad</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <TextEdit ReadOnly="true" @bind-Text="dep.Nacionalidad"/>
+                            <TextEdit ReadOnly="false" @bind-Text="dep.Nacionalidad"/>
                         </FieldBody>
                     </Field>
 
@@ -63,9 +71,9 @@
                     <Field Horizontal ColumnSize="ColumnSize.Is4">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Sexo</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <RadioGroup Disabled="true" TValue="Sexo" @bind-CheckedValue="dep.Sexo" Inline="true">
-                                <Radio Disabled="true" ReadOnly="true" Value="@(Sexo.Masculino)">M</Radio>
-                                <Radio Disabled="true" Value="@(Sexo.Femenino)">F</Radio>
+                            <RadioGroup Disabled="false" TValue="Sexo" @bind-CheckedValue="dep.Sexo" Inline="true">
+                                <Radio Disabled="false" ReadOnly="false" Value="@(Sexo.Masculino)">M</Radio>
+                                <Radio Disabled="false" Value="@(Sexo.Femenino)">F</Radio>
                             </RadioGroup>
                         </FieldBody>
                     </Field>
@@ -73,13 +81,13 @@
                     <Field Horizontal ColumnSize="ColumnSize.Is4">
                         <FieldLabel ColumnSize="ColumnSize.Is3">Celular</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is9">
-                            <TextEdit ReadOnly="true" @bind-Text="dep.Celular"/>
+                            <TextEdit ReadOnly="false" @bind-Text="dep.Celular"/>
                         </FieldBody>
                     </Field>
                     <Field Horizontal ColumnSize="ColumnSize.Is4">
                         <FieldLabel ColumnSize="ColumnSize.Is3">Email</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is9">
-                            <TextEdit ReadOnly="true" @bind-Text="dep.Email"/>
+                            <TextEdit ReadOnly="false" @bind-Text="dep.Email"/>
                         </FieldBody>
                     </Field>
                 </Fields>
@@ -89,21 +97,21 @@
                     <Fields Margin="Margin.Is1.FromTop">
                         <Field Horizontal ColumnSize="ColumnSize.Is8">
                             <FieldLabel ColumnSize="ColumnSize.Is3">Lugar de Trabajo</FieldLabel>
-                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="dep.LugarTrabajo"/></FieldBody>
+                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="false" @bind-Text="dep.LugarTrabajo"/></FieldBody>
                         </Field>
                         <Field Horizontal ColumnSize="ColumnSize.Is4">
                             <FieldLabel ColumnSize="ColumnSize.Is3">Cargo</FieldLabel>
-                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="dep.Posicion"/></FieldBody>
+                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="false" @bind-Text="dep.Posicion"/></FieldBody>
                         </Field>
                     </Fields>
                     <Fields Margin="Margin.Is1.FromTop">
                         <Field Horizontal ColumnSize="ColumnSize.Is8">
                             <FieldLabel ColumnSize="ColumnSize.Is3">Dirección Of.</FieldLabel>
-                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="true" @bind-Text="dep.DireccionTrabajo"/></FieldBody>
+                            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="false" @bind-Text="dep.DireccionTrabajo"/></FieldBody>
                         </Field>
                         <Field Horizontal ColumnSize="ColumnSize.Is4">
                             <FieldLabel ColumnSize="ColumnSize.Is5">Teléfono Of.</FieldLabel>
-                            <FieldBody ColumnSize="ColumnSize.Is7"><TextEdit ReadOnly="true" @bind-Text="dep.TelefonoTrabajo"/></FieldBody>
+                            <FieldBody ColumnSize="ColumnSize.Is7"><TextEdit ReadOnly="false" @bind-Text="dep.TelefonoTrabajo"/></FieldBody>
                         </Field>
                     </Fields>
                 }
@@ -115,6 +123,10 @@ else
 {
     <EmptyView/>
 }
+
+<Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="DoShowAdd">
+    <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+</Button>
 
 <PhotoPicker @ref="_photoPicker" Title="Foto Dependiente"></PhotoPicker>
 
@@ -132,4 +144,19 @@ else
             StateHasChanged();
         });
     }
+    
+    private void DoShowAdd()
+    {
+        Solicitud.Dependientes.Add(new Dependiente());
+    }
+
+    private async Task DoDelete(Dependiente dependiente)
+    {
+        if ( !await MessageService.Confirm( "Seguro que desea borrar esta persona adicional de este socio?", "Confirme" ) )
+        {
+            return;
+        }
+        Solicitud.Dependientes.Remove(dependiente);
+    }
+
 }

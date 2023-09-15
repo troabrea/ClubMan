@@ -19,6 +19,11 @@
                         @if (_solicitud.EstatusSolicitud == EstatusSolicitud.Recibida || _solicitud.EstatusSolicitud == EstatusSolicitud.Pospuesto)
                         {
                             <BarItem>
+                                <Button Clicked="DoSaveChanges" Loading="@isBusy" Border="Blazorise.Border.Info" Outline="true">
+                                    Guardar Cambios <Icon Name="IconName.Save"></Icon>
+                                </Button>
+                            </BarItem>
+                            <BarItem>
                                 <Button Clicked="DoSubmitForReview" Loading="@isBusy" Border="Blazorise.Border.Info" Outline="true">Someter <Icon Name="IconName.Forward"></Icon></Button>
                             </BarItem>
                         }
@@ -65,6 +70,13 @@
                     Otras Membresias
                     <Badge Color="Color.Primary" Pill>@_solicitud.MembresiasAlternas.Count</Badge>
                 </Tab>
+                @if (_previas.Count > 0)
+                {
+                    <Tab Name="previas">
+                        Previas
+                        <Badge Color="Color.Warning" Pill>@_previas.Count</Badge>
+                    </Tab>
+                }
                 @if (_solicitud.EstatusSolicitud != EstatusSolicitud.Recibida)
                 {
                     <Tab Name="revisiones">
@@ -92,7 +104,37 @@
                 <TabPanel Name="otros">
                     <SolicitudOtrasMembresias Solicitud="_solicitud"/>
                 </TabPanel>
-                 @if (_solicitud.EstatusSolicitud != EstatusSolicitud.Recibida)
+                 @if (_previas.Count > 0)
+                {
+                    <TabPanel Name="previas">
+                        <SfGrid DataSource="_previas"
+                                AdaptiveUIMode="AdaptiveMode.Both"
+                                AllowFiltering="true"
+                                AllowSorting="true"
+                                AllowMultiSorting="true"
+                                AllowGrouping="false"
+                                AllowExcelExport="true"
+                                AllowPdfExport="true"
+                                AllowTextWrap="true"
+                                ShowColumnChooser="false"
+                                ShowColumnMenu="false"
+                                AllowPaging="true">
+                            <GridFilterSettings Type="FilterType.Excel" ShowFilterBarStatus="true" />
+                            <GridSelectionSettings CheckboxOnly="true"></GridSelectionSettings>
+                            <GridColumns>
+                                <GridColumn Field="Id" Width="100px" HeaderText="No."/>
+                                <GridColumn Field="FechaSolicitud" Width="120px" HeaderText="Fecha" Format="dd-MMM-yyyy"></GridColumn>
+                                <GridColumn Field="SolicitudPara" HeaderText="Solicitante"/>
+                                <GridColumn Field="Celular" Width="120px"></GridColumn>
+                                <GridColumn Field="TipoSocio" Width="120px" HeaderText="Tipo"></GridColumn>
+                                <GridColumn Field="EstatusSolicitud" Width="120px" HeaderText="Estatus"></GridColumn>
+                                <GridColumn Field="UltimoSometimiento" Width="130px" HeaderText="Sometida" Format="dd-MMM-yyyy"></GridColumn>
+                            </GridColumns>
+                            <GridEvents TValue="Solicitud" OnRecordClick="DoShowDetail" ></GridEvents>
+                        </SfGrid>
+                    </TabPanel>
+                }
+                @if (_solicitud.EstatusSolicitud != EstatusSolicitud.Recibida)
                 {
                     <TabPanel Name="revisiones">
                         <SolicitudRevisiones Solicitud="_solicitud"/>
@@ -102,6 +144,18 @@
         </Tabs>
     </ChildContent>
 </DetailContent>
+
+<Modal @ref="_previousDialog" ShowBackdrop="true" RenderMode="ModalRenderMode.LazyReload">
+    <ModalContent Size="ModalSize.Fullscreen">
+        <ModalHeader>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalBody>
+            <DetalleSolicitudPrevia SolicitudId = "@_previouseSolicitudId" />            
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
 
 <SolicitudReviewResult @ref="_reviewDialog"></SolicitudReviewResult>
 
@@ -118,15 +172,35 @@
     [CascadingParameter] public AppState AppState { get; set; }
     [Parameter] public long SolicitudId { get; set; }
     Solicitud _solicitud;
+    List<Solicitud> _previas = new();
+    long _previouseSolicitudId = 0;
 
+    private void DoShowDetail(RecordClickEventArgs<Solicitud> arg)
+    {
+        _previouseSolicitudId = arg.RowData.Id;
+        StateHasChanged();
+        _previousDialog.Show();
+    }
+    
+    // private void DoShowPreviousDetail(Solicitud sol)
+    // {
+    //     NavigationManager.NavigateTo($"/DetalleSolicitud/{sol.Id}", true);
+    // }
+    
     private async Task DoLoadSolicitudAsync()
     {
         _solicitud = await ApiService.GetSolicitud(AppState.ClubKey, SolicitudId);
+        if (!String.IsNullOrEmpty(_solicitud?.Beneficiario))
+        {
+            _previas = await ApiService.GetSolicitudesPrevias(AppState.ClubKey, _solicitud.NumeroIdentidad);
+        }
         _title = $"Detalle Solicitud - {_solicitud.Id} - {_solicitud.EstatusSolicitud}";
         StateHasChanged();
     }
 
     private bool isBusy;
+    private Modal _previousDialog;
+
     private async Task DoSubmitForReview()
     {
         if (isBusy) return;
@@ -249,5 +323,28 @@
         string url = _solicitud.SolicitudPdfUrl;
         await jsRuntime.InvokeAsync<object>("open", url, "_blank");
     }
+
+    private async Task DoSaveChanges()
+    {
+        if (isBusy) return;
+        try
+        {
+            isBusy = true;
+
+            await ApiService.UpdateSolicitud(AppState.ClubKey, _solicitud);
+            NavigationManager.NavigateTo("/Solicitudes");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrido un error grabando el resultado de la revisión", "Alerta");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    
 
 }

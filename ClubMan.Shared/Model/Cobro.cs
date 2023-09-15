@@ -12,5 +12,7 @@ public class Cobro
     public string NumeroConfirmacion { get; set; }
     public DateTime ConfirmadoEn { get; set; }
     public string Mensaje { get; set; }
+    public string Concepto => "Pago membresía";
+    public string TotalPagoStr => $"RD{TotalPago:C2}";
     public List<CobroAplicacion> Aplicaciones { get; set; } = new();
 }

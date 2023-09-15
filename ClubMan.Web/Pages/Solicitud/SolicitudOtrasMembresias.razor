@@ -1,3 +1,4 @@
+@inject IMessageService MessageService
 @if(Solicitud != null && Solicitud.MembresiasAlternas.Any()) {
 <Container Margin="Margin.Is2">
     @foreach (var dep in Solicitud.MembresiasAlternas)
@@ -7,13 +8,20 @@
                 <Field Horizontal ColumnSize="ColumnSize.Is8">
                     <FieldLabel ColumnSize="ColumnSize.Is4">Nombre</FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is8">
-                        <TextEdit ReadOnly="true" @bind-Text="dep.NombreClub"/>
+                        <TextEdit ReadOnly="false" @bind-Text="dep.NombreClub"/>
                     </FieldBody>
                 </Field>
-                <Field Horizontal ColumnSize="ColumnSize.Is4">
+                <Field Horizontal ColumnSize="ColumnSize.Is3">
                     <FieldLabel ColumnSize="ColumnSize.Is4">Desde</FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is8">
-                        <DatePicker TValue="DateTime" DisplayFormat="dd-MMM-yyyy" ReadOnly="true" @bind-Text="dep.MiembroDesde"/>
+                        <DatePicker TValue="DateTime" DisplayFormat="dd-MMM-yyyy" ReadOnly="false" @bind-Text="dep.MiembroDesde"/>
+                    </FieldBody>
+                </Field>
+                <Field Horizontal Float="Float.End" ColumnSize="ColumnSize.Is1">
+                    <FieldBody>
+                        <Button Color="Color.Danger" Clicked="async () => await DoDelete(dep)">
+                            <Icon Name="IconName.Delete"/>
+                        </Button>
                     </FieldBody>
                 </Field>
             </Fields>
@@ -26,8 +34,26 @@ else
 {
     <EmptyView/>
 }
+
+<Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="DoShowAdd">
+    <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+</Button>
 @code {
 
     [Parameter]
     public Solicitud Solicitud { get; set; }
+    
+    private void DoShowAdd()
+    {
+        Solicitud.MembresiasAlternas.Add(new MembresiaAlterna());
+    }
+
+    private async Task DoDelete(MembresiaAlterna rec)
+    {
+        if ( !await MessageService.Confirm( "Seguro que desea borrar esta membresía altera de este socio?", "Confirme" ) )
+        {
+            return;
+        }
+        Solicitud.MembresiasAlternas.Remove(rec);
+    }
 }

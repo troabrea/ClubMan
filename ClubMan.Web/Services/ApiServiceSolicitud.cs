@@ -21,10 +21,28 @@ public partial class ApiService : IApiService
         SetupClient(apiKey);
         return _httpClient.GetFromJsonAsync<Solicitud>($"Solicitud/{solicitudId}");
     }
-    public Task UpsertSolicitud(string apiKey, Solicitud solicitud)
+    public Task<List<Solicitud>> GetSolicitudesPrevias(string apiKey, string beneficiarioId)
+    {
+        SetupClient(apiKey);
+        return _httpClient.GetFromJsonAsync<List<Solicitud>>($"Solicitud/beneficiario/{beneficiarioId}");
+    }
+    public async Task<long> CreateSolicitud(string apiKey)
+    {
+        SetupClient(apiKey);
+        var solicitud = Solicitud.Empty();
+        await _httpClient.PostAsJsonAsync("Solicitud", solicitud);
+        var sols = await GetAllSolicitudes(apiKey);
+        return sols.LastOrDefault()?.Id ?? -1;
+    }
+    public Task InsertSolicitud(string apiKey, Solicitud solicitud)
     {
         SetupClient(apiKey);
         return _httpClient.PostAsJsonAsync("Solicitud", solicitud);
+    }
+    public Task UpdateSolicitud(string apiKey, Solicitud solicitud)
+    {
+        SetupClient(apiKey);
+        return _httpClient.PutAsJsonAsync("Solicitud", solicitud);
     }
     public async Task<Solicitud> SubmitSolicitud(AppState appState, long solicitudId)
     {

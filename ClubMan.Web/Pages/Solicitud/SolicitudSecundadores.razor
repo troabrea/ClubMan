@@ -1,3 +1,4 @@
+@inject IMessageService MessageService
 @if(Solicitud != null && Solicitud.SociosSecundadores.Any()) {
 <Container Margin="Margin.Is2">
     @foreach (var dep in Solicitud.SociosSecundadores)
@@ -7,13 +8,20 @@
                 <Field Horizontal ColumnSize="ColumnSize.Is8">
                     <FieldLabel ColumnSize="ColumnSize.Is4">Nombre</FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is8">
-                        <TextEdit ReadOnly="true" @bind-Text="dep.NombreSocio"/>
+                        <TextEdit ReadOnly="false" @bind-Text="dep.NombreSocio"/>
                     </FieldBody>
                 </Field>
-                <Field Horizontal ColumnSize="ColumnSize.Is4">
+                <Field Horizontal ColumnSize="ColumnSize.Is3">
                     <FieldLabel ColumnSize="ColumnSize.Is4">Número</FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is8">
-                        <TextEdit ReadOnly="true" @bind-Text="dep.NumeroSocio"/>
+                        <TextEdit ReadOnly="false" @bind-Text="dep.NumeroSocio"/>
+                    </FieldBody>
+                </Field>
+                <Field Horizontal Float="Float.End" ColumnSize="ColumnSize.Is1">
+                    <FieldBody>
+                        <Button Color="Color.Danger" Clicked="async () => await DoDelete(dep)">
+                            <Icon Name="IconName.Delete"/>
+                        </Button>
                     </FieldBody>
                 </Field>
             </Fields>
@@ -25,9 +33,27 @@ else
 {
     <EmptyView/>
 }
+
+<Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="DoShowAdd">
+    <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+</Button>
 @code {
 
     [Parameter]
     public Solicitud Solicitud { get; set; }
+    
+    private void DoShowAdd()
+    {
+        Solicitud.SociosSecundadores.Add(new SocioSecundador());
+    }
+
+    private async Task DoDelete(SocioSecundador rec)
+    {
+        if ( !await MessageService.Confirm( "Seguro que desea borrar este socio secundador de este socio?", "Confirme" ) )
+        {
+            return;
+        }
+        Solicitud.SociosSecundadores.Remove(rec);
+    }
 
 }

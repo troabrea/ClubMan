@@ -1,4 +1,3 @@
-using ClubMan.WebApi.Infrastructure;
 using ClubMan.WebApi.Model;
 using ClubMan.WebApi.Services;
 using Microsoft.EntityFrameworkCore;

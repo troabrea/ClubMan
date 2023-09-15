@@ -1,0 +1,132 @@
+@using TextOverflow = Blazorise.TextOverflow
+<Container Margin="Margin.Is2">
+    @* <Divider DividerType="DividerType.TextContent" Text="Datos Personales"/> *@
+    <Fields>
+        <Field ColumnSize="ColumnSize.Is3">
+            <FieldLabel>Cédula o Pasaporte</FieldLabel>
+            <TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.NumeroIdentidad"></TextEdit>
+        </Field>
+        <Field ColumnSize="ColumnSize.Is3">
+            <FieldLabel>Nombre</FieldLabel>
+            <TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Nombre"></TextEdit>
+        </Field>
+        
+        <Field ColumnSize="ColumnSize.Is3">
+            <FieldLabel >Estado Civil</FieldLabel>
+            <FieldBody>
+                <RadioGroup Disabled="@IsReadOnly" TValue="EstadoCivil" @bind-CheckedValue="Cortesia.EstadoCivil" Inline="true">
+                    <Radio Disabled="@IsReadOnly" ReadOnly="@IsReadOnly" Value="@(EstadoCivil.Casado)">Casado</Radio>
+                    <Radio Disabled="@IsReadOnly" Value="@(EstadoCivil.Soltero)">Soltero</Radio>
+                    <Radio Disabled="@IsReadOnly" Value="@(EstadoCivil.Viudo)">Viudo</Radio>
+                </RadioGroup>
+            </FieldBody>
+        </Field>
+
+        <Field ColumnSize="ColumnSize.Is3">
+            <FieldLabel >Sexo</FieldLabel>
+            <FieldBody>
+                <RadioGroup Disabled="@IsReadOnly" TValue="Sexo" @bind-CheckedValue="Cortesia.Sexo" Inline="true">
+                    <Radio Disabled="@IsReadOnly" Value="@(Sexo.Masculino)">M</Radio>
+                    <Radio Disabled="@IsReadOnly" Value="@(Sexo.Femenino)">F</Radio>
+                </RadioGroup>
+            </FieldBody>
+        </Field>
+    </Fields>
+    <Fields Margin="Margin.Is1.FromTop">
+        <Field  ColumnSize="ColumnSize.Is3">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Desde</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><DatePicker ReadOnly="@IsReadOnly" DisplayFormat="dd-MMM-yyyy" @bind-Date="Cortesia.FechaInicio"/></FieldBody>
+        </Field>
+        <Field  ColumnSize="ColumnSize.Is3">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Hasta</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><DatePicker ReadOnly="@IsReadOnly" DisplayFormat="dd-MMM-yyyy" @bind-Date="Cortesia.FechaExpiracion"/></FieldBody>
+        </Field>
+        
+        <Field  ColumnSize="ColumnSize.Is3">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Nacimiento</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><DatePicker ReadOnly="@IsReadOnly" DisplayFormat="dd-MMM-yyyy" @bind-Date="Cortesia.FechaNacimiento"/></FieldBody>
+        </Field>
+
+        <Field  ColumnSize="ColumnSize.Is3">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Nacionalidad</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Nacionalidad"/></FieldBody>
+        </Field>
+
+    </Fields>
+    <Divider DividerType="DividerType.TextContent" Text="Dirección"/>
+    <Field Horizontal ColumnSize="ColumnSize.Is12">
+        <FieldLabel ColumnSize="ColumnSize.Is1">Dirección</FieldLabel>
+        <FieldBody ColumnSize="ColumnSize.Is11"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Direccion"/></FieldBody>
+    </Field>
+    <Fields Margin="Margin.Is1.FromTop">
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is3">Sector</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Sector"/></FieldBody>
+        </Field>
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is3">Ciudad</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Ciudad"/></FieldBody>
+        </Field>
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is3">País</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Pais"/></FieldBody>
+        </Field>
+    </Fields>
+    <Fields Margin="Margin.Is1.FromTop">
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is3">Teléfono</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.TelefonoResidencia"/></FieldBody>
+        </Field>
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is3">Celular</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Celular"/></FieldBody>
+        </Field>
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is3">Email</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Email"/></FieldBody>
+        </Field>
+    </Fields>
+    <Divider DividerType="DividerType.TextContent" Text="Información Laboral"/>
+    <Fields Margin="Margin.Is1.FromTop">
+        <Field Horizontal ColumnSize="ColumnSize.Is8">
+            <FieldLabel ColumnSize="ColumnSize.Is3">Lugar de Trabajo</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.LugarTrabajo"/></FieldBody>
+        </Field>
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is3">Cargo</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is9"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.Posicion"/></FieldBody>
+        </Field>
+    </Fields>
+    <Fields Margin="Margin.Is1.FromTop">
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Teléfono Of.</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.TelefonoOficina"/></FieldBody>
+        </Field>
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Flota</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.TelefonoFlota"/></FieldBody>
+        </Field>
+        <Field Horizontal ColumnSize="ColumnSize.Is4">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Email Of.</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.EmailTrabajo"/></FieldBody>
+        </Field>
+    </Fields>
+    <Fields Margin="Margin.Is1.FromTop">
+        <Field Horizontal ColumnSize="ColumnSize.Is6">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Nombre Asistente</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.NombreAsistente"/></FieldBody>
+        </Field>
+        <Field Horizontal ColumnSize="ColumnSize.Is6">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Email Asistente</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Cortesia.EmailAsitente"/></FieldBody>
+        </Field>
+    </Fields>
+
+</Container>
+@code {
+    [Parameter] public Cortesia Cortesia { get; set; }
+
+    [Parameter]
+    public bool IsReadOnly { get; set; } = false;
+
+}

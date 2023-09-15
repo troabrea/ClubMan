@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClubMan.Api.Controllers;
+namespace ClubMan.WebApi.Controllers;
 
 [ApiController]
 //[Authorize(Roles = "User")]
@@ -38,11 +38,11 @@ public class AdminController : ControllerBase
         //     return Unauthorized();
         // }
         var entry = _db.Entry(empresa);
-        if (entry.State != EntityState.Detached)
+        if (entry.State == EntityState.Detached)
         {
             entry.State = EntityState.Modified;
             await _db.SaveChangesAsync();
-        } 
+        }
         return Ok();
     }
     

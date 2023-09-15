@@ -1,27 +1,37 @@
+@inject IMessageService MessageService
+
 @if(Solicitud != null && Solicitud.ReferenciasBancarias.Any()) {
 <Container Margin="Margin.Is2">
     @foreach (var dep in Solicitud.ReferenciasBancarias)
     {
         <Container Margin="Margin.Is4.FromTop" >
             <Fields Margin="Margin.Is2.FromTop">
-                <Field Horizontal ColumnSize="ColumnSize.Is5">
+                <Field Horizontal ColumnSize="ColumnSize.Is4">
                     <FieldLabel ColumnSize="ColumnSize.Is4">Banco</FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is8">
-                        <TextEdit ReadOnly="true" @bind-Text="dep.Banco"/>
+                        <TextEdit ReadOnly="false" @bind-Text="dep.Banco"/>
                     </FieldBody>
                 </Field>
                 <Field Horizontal ColumnSize="ColumnSize.Is4">
                     <FieldLabel ColumnSize="ColumnSize.Is4">Oficial</FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is8">
-                        <TextEdit ReadOnly="true" @bind-Text="dep.OficialCuenta"/>
+                        <TextEdit ReadOnly="false" @bind-Text="dep.OficialCuenta"/>
                     </FieldBody>
                 </Field>
                 <Field Horizontal ColumnSize="ColumnSize.Is3">
                     <FieldLabel ColumnSize="ColumnSize.Is4">Cuenta</FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is8">
-                        <TextEdit ReadOnly="true" @bind-Text="dep.NumeroDeCuenta"/>
+                        <TextEdit ReadOnly="false" @bind-Text="dep.NumeroDeCuenta"/>
                     </FieldBody>
                 </Field>
+                <Field Horizontal Float="Float.End" ColumnSize="ColumnSize.Is1">
+                    <FieldBody>
+                        <Button Color="Color.Danger" Clicked="async () => await DoDelete(dep)">
+                            <Icon Name="IconName.Delete"/>
+                        </Button>
+                    </FieldBody>
+                </Field>
+                
             </Fields>
         </Container>
     }
@@ -31,9 +41,29 @@ else
 {
     <EmptyView/>
 }
+
+
+<Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="DoShowAdd">
+    <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+</Button>
+
 @code {
 
     [Parameter]
     public Solicitud Solicitud { get; set; }
 
+    private void DoShowAdd()
+    {
+        Solicitud.ReferenciasBancarias.Add(new ReferenciaBancaria());
+    }
+
+    private async Task DoDelete(ReferenciaBancaria referenciaBancaria)
+    {
+        if ( !await MessageService.Confirm( "Seguro que desea borrar esta referencia bancaría de este socio?", "Confirme" ) )
+        {
+            return;
+        }
+        Solicitud.ReferenciasBancarias.Remove(referenciaBancaria);
+    }
+    
 }

@@ -141,6 +141,100 @@ namespace ClubMan.WebApi.Migrations
                     b.ToTable("Cobro", (string)null);
                 });
 
+            modelBuilder.Entity("ClubMan.Shared.Model.Cortesia", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<string>("Celular")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Ciudad")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Direccion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DireccionTrabajo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailAsitente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailTrabajo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EstadoCivil")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Fax")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("FechaExpiracion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaNacimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LugarTrabajo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nacionalidad")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nombre")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreAsistente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumeroCarnet")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumeroIdentidad")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pais")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Posicion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sector")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Sexo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TelefonoFlota")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TelefonoOficina")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TelefonoResidencia")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("Cortesia", (string)null);
+                });
+
             modelBuilder.Entity("ClubMan.Shared.Model.Cxc", b =>
                 {
                     b.Property<string>("IdInterno")
@@ -317,6 +411,18 @@ namespace ClubMan.WebApi.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("Bloqueado")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("BloqueadoDesde")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("BloqueadoHasta")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("BloqueadoRazon")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Capacidad")
                         .HasColumnType("int");
 
@@ -407,6 +513,9 @@ namespace ClubMan.WebApi.Migrations
                     b.Property<string>("Direccion")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<double>("Latitud")
                         .HasColumnType("float");
 
@@ -424,6 +533,9 @@ namespace ClubMan.WebApi.Migrations
 
                     b.Property<bool>("SoloOficina")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Telefono")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -727,6 +839,9 @@ namespace ClubMan.WebApi.Migrations
                     b.Property<int>("Sexo")
                         .HasColumnType("int");
 
+                    b.Property<string>("SocioId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<long>("SolicitudId")
                         .HasColumnType("bigint");
 
@@ -743,6 +858,10 @@ namespace ClubMan.WebApi.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SocioId")
+                        .IsUnique()
+                        .HasFilter("[SocioId] IS NOT NULL");
 
                     b.ToTable("Socio", (string)null);
                 });

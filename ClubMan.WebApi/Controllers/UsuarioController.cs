@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClubMan.Api.Controllers;
+namespace ClubMan.WebApi.Controllers;
 
 [ApiController]
 //[Authorize(Roles = "Admin")]
@@ -29,14 +29,20 @@ public class UsuarioController : ControllerBase
         return Ok(await _db.Usuarios.ToListAsync());
     }
     
-    [HttpGet("{usuarioId:guid}", Name = "GetUsuario")]
+    [HttpGet("ById/{usuarioId:guid}", Name = "GetUsuarioById")]
     [Produces(typeof(Usuario))]
     public async Task<IActionResult> GetUsuario(Guid usuarioId)
     {
         var result = await _db.FindAsync<Usuario>(usuarioId);
         return result == null ? NotFound() : Ok(result);
     }
-    
+    [HttpGet("{usuarioId}", Name = "GetUsuario")]
+    [Produces(typeof(Usuario))]
+    public async Task<IActionResult> GetUsuario(String usuarioId)
+    {
+        var result = await _db.Usuarios.SingleOrDefaultAsync(u => u.UsuarioId == usuarioId);
+        return result == null ? NotFound() : Ok(result);
+    }
     [HttpPost("login", Name = "Login")]
     [Produces(typeof(LoggedUserViewModel))]
     public async Task<IActionResult> LoginUser([FromBody] LoginViewModel loginViewModel)

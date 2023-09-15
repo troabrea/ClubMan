@@ -12,4 +12,8 @@ public record Instalacion
     public string MenuUrl { get; set; }
     public decimal CostoReserva { get; set; }
     public string Horario { get; set; }
+    public bool Bloqueado { get; set; }
+    public String BloqueadoRazon { get; set; }
+    public DateTime BloqueadoDesde { get; set; }
+    public DateTime BloqueadoHasta { get; set; }
 }

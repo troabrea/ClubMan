@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClubMan.Web", "ClubMan.Web\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClubMan.WebApi", "ClubMan.WebApi\ClubMan.WebApi.csproj", "{F6D98CE9-F065-4687-B4D3-E8F353A970FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClubMan.AppApi", "ClubMan.AppApi\ClubMan.AppApi.csproj", "{D65A7DE5-3DA8-43BA-8BB1-00A9681435EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{F6D98CE9-F065-4687-B4D3-E8F353A970FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6D98CE9-F065-4687-B4D3-E8F353A970FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6D98CE9-F065-4687-B4D3-E8F353A970FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D65A7DE5-3DA8-43BA-8BB1-00A9681435EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D65A7DE5-3DA8-43BA-8BB1-00A9681435EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D65A7DE5-3DA8-43BA-8BB1-00A9681435EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D65A7DE5-3DA8-43BA-8BB1-00A9681435EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

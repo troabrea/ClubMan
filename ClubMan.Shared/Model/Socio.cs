@@ -8,6 +8,7 @@ namespace ClubMan.Shared.Model;
 public record Socio
 {
     public long Id { get; set; }
+    public string SocioId { get; set; }
     public EstatusMembresia EstatusMembresia { get; set; }
     public long SolicitudId { get; set; }
     public String NumeroCarnet { get; set; }

@@ -12,18 +12,20 @@
                 <Field ColumnSize="ColumnSize.Is8">
                     <FieldLabel >Tipo Socio</FieldLabel>
                     <FieldBody>
-                        <RadioGroup Disabled="true" TValue="TipoSocio" @bind-CheckedValue="Solicitud.TipoSocio" Inline="true">
-                            <Radio Disabled="true" ReadOnly="true" Value="@(TipoSocio.Propietario)">Propietario</Radio>
-                            <Radio Disabled="true" Value="@(TipoSocio.Numeral)">Numeral</Radio>
-                            <Radio Disabled="true" Value="@(TipoSocio.Corporativo)">Corporativo</Radio>
-                            <Radio Disabled="true" Value="@(TipoSocio.Diplomatico)">Diplomático</Radio>
-                            <Radio Disabled="true" Value="@(TipoSocio.Especial)">Especial</Radio>
+                        <RadioGroup Disabled="false" TValue="TipoSocio" @bind-CheckedValue="Solicitud.TipoSocio" Inline="true">
+                            <Radio Disabled="false" ReadOnly="false" Value="@(TipoSocio.Fundadores)">Fundador</Radio>
+                            <Radio Disabled="false" ReadOnly="false" Value="@(TipoSocio.Propietario)">Propietario</Radio>
+                            <Radio Disabled="false" Value="@(TipoSocio.Numeral)">Numeral</Radio>
+                            <Radio Disabled="false" Value="@(TipoSocio.Corporativo)">Corporativo</Radio>
+                            <Radio Disabled="false" Value="@(TipoSocio.Diplomatico)">Diplomático</Radio>
+                            <Radio Disabled="false" Value="@(TipoSocio.NoResidente)">No-Residente</Radio>
+                            <Radio Disabled="false" Value="@(TipoSocio.Especial)">Especial</Radio>
                         </RadioGroup>
                     </FieldBody>
                 </Field>
                 <Field ColumnSize="ColumnSize.Is2">
                     <FieldLabel>Fecha</FieldLabel>
-                    <FieldBody><DatePicker ReadOnly="true" DisplayFormat="dd-MMM-yyyy" TValue="DateTime" @bind-Date="Solicitud.FechaSolicitud"/></FieldBody>
+                    <FieldBody><DatePicker ReadOnly="false" DisplayFormat="dd-MMM-yyyy" TValue="DateTime" @bind-Date="Solicitud.FechaSolicitud"/></FieldBody>
                 </Field>
                 <Field ColumnSize="ColumnSize.Is2">
                     <FieldLabel>Solicitud No.</FieldLabel>
@@ -37,13 +39,13 @@
         <Field ColumnSize="ColumnSize.Is6">
             <FieldLabel TextOverflow="Blazorise.TextOverflow.NoWrap">Solicitante</FieldLabel>
             <FieldBody >
-                <TextEdit ReadOnly="true" @bind-Text="Solicitud.Solicitante"/>
+                <TextEdit ReadOnly="false" @bind-Text="Solicitud.Solicitante"/>
             </FieldBody>
         </Field>
         <Field ColumnSize="ColumnSize.Is6">
             <FieldLabel TextOverflow="Blazorise.TextOverflow.NoWrap">Beneficiario</FieldLabel>
             <FieldBody >
-                <TextEdit ReadOnly="true" @bind-Text="Solicitud.Beneficiario"/>
+                <TextEdit ReadOnly="false" @bind-Text="Solicitud.Beneficiario"/>
             </FieldBody>
         </Field>
     </Fields>

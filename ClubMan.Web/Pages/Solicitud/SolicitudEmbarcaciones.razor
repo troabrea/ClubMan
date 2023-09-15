@@ -1,25 +1,34 @@
+@inject IMessageService MessageService
+
 @if(Solicitud != null && Solicitud.Embarcaciones.Any()) {
     <Container Margin="Margin.Is2">
         @foreach (var dep in Solicitud.Embarcaciones)
         {
             <Container Margin="Margin.Is4.FromTop" >
                 <Fields Margin="Margin.Is2.FromTop">
-                    <Field Horizontal ColumnSize="ColumnSize.Is5">
+                    <Field Horizontal ColumnSize="ColumnSize.Is4">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Nombre</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <TextEdit ReadOnly="true" @bind-Text="dep.Nombre"/>
+                            <TextEdit ReadOnly="false" @bind-Text="dep.Nombre"/>
                         </FieldBody>
                     </Field>
                     <Field Horizontal ColumnSize="ColumnSize.Is4">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Marca</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <TextEdit ReadOnly="true" @bind-Text="dep.Marca"/>
+                            <TextEdit ReadOnly="false" @bind-Text="dep.Marca"/>
                         </FieldBody>
                     </Field>
                     <Field Horizontal ColumnSize="ColumnSize.Is3">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Tipo</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <TextEdit ReadOnly="true" @bind-Text="dep.Tipo"/>
+                            <TextEdit ReadOnly="false" @bind-Text="dep.Tipo"/>
+                        </FieldBody>
+                    </Field>
+                    <Field Horizontal Float="Float.End" ColumnSize="ColumnSize.Is1">
+                        <FieldBody>
+                            <Button Color="Color.Danger" Clicked="async () => await DoDelete(dep)">
+                                <Icon Name="IconName.Delete"/>
+                            </Button>
                         </FieldBody>
                     </Field>
                 </Fields>
@@ -27,19 +36,19 @@
                     <Field Horizontal ColumnSize="ColumnSize.Is5">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Eslora</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <NumericEdit TValue="Double" ReadOnly="true" @bind-Value="dep.Eslora"/>
+                            <NumericEdit TValue="Double" ReadOnly="false" @bind-Value="dep.Eslora"/>
                         </FieldBody>
                     </Field>
                     <Field Horizontal ColumnSize="ColumnSize.Is4">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Manga</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <NumericEdit TValue="Double" ReadOnly="true" @bind-Value="dep.Manga"/>
+                            <NumericEdit TValue="Double" ReadOnly="false" @bind-Value="dep.Manga"/>
                         </FieldBody>
                     </Field>
                     <Field Horizontal ColumnSize="ColumnSize.Is3">
                         <FieldLabel ColumnSize="ColumnSize.Is4">Ubicación</FieldLabel>
                         <FieldBody ColumnSize="ColumnSize.Is8">
-                            <TextEdit ReadOnly="true" @bind-Text="dep.Localizacion"/>
+                            <TextEdit ReadOnly="false" @bind-Text="dep.Localizacion"/>
                         </FieldBody>
                     </Field>
                 </Fields>
@@ -51,9 +60,29 @@ else
 {
     <EmptyView/>
 }
+
+
+<Button Color="Color.Primary" Margin="Margin.Is1.FromTop" Border="Blazorise.Border.RoundedCircle" Outline="false" Clicked="DoShowAdd">
+    <Icon Name="IconName.Add" TextColor="TextColor.White"/>
+</Button>
+
 @code {
 
     [Parameter]
     public Solicitud Solicitud { get; set; }
+    
+    private void DoShowAdd()
+    {
+        Solicitud.Embarcaciones.Add(new Embarcacion());
+    }
+
+    private async Task DoDelete(Embarcacion emb)
+    {
+        if ( !await MessageService.Confirm( "Seguro que desea borrar esta embaracación de este socio?", "Confirme" ) )
+        {
+            return;
+        }
+        Solicitud.Embarcaciones.Remove(emb);
+    }
 
 }

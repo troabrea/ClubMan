@@ -7,6 +7,8 @@
         <GridColumn Width="120px" HeaderText="Orden" Field="@nameof(Localidad.Orden)" />
         <GridColumn HeaderText="Título" Field="@nameof(Localidad.Nombre)"/>
         <GridColumn HeaderText="Categoría" Field="@nameof(Localidad.Direccion)"/>
+        <GridColumn HeaderText="Teléfono" Field="@nameof(Localidad.Telefono)"/>
+        <GridColumn HeaderText="Email" Field="@nameof(Localidad.Email)"/>
         <GridColumn HeaderText="Sólo Oficina" Width="80px" AllowFiltering="false" Field="@nameof(Localidad.SoloOficina)">
             <Template>
                  @{
@@ -59,14 +61,36 @@
                             </FieldBody>
                         </Field>
                     </Validation>
-                    <Validation Validator="ValidationRule.IsNotEmpty">
-                        <Field>
-                            <FieldLabel TextColor="TextColor.Black50">Dirección</FieldLabel>
-                            <MemoEdit @bind-Text="_editRow.Direccion"/>
-                            <FieldHelp></FieldHelp>
-                        </Field>
-                    </Validation>
-                    <Fields>
+                <Validation Validator="ValidationRule.IsNotEmpty">
+                    <Field>
+                        <FieldLabel TextColor="TextColor.Black50">Dirección</FieldLabel>
+                        <MemoEdit @bind-Text="_editRow.Direccion"/>
+                        <FieldHelp></FieldHelp>
+                    </Field>
+                </Validation>
+                
+                <Fields>
+                    <Field>
+                        <FieldLabel ColumnSize="ColumnSize.Is6" TextColor="TextColor.Black50">Correo Contacto</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Email">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                    <Field>
+                        <FieldLabel ColumnSize="ColumnSize.Is6" TextColor="TextColor.Black50">Teléfono Contacto</FieldLabel>
+                        <FieldBody>
+                            <TextEdit @bind-Text="_editRow.Telefono">
+                                <Feedback><ValidationError/></Feedback>
+                            </TextEdit>
+                        </FieldBody>
+                    </Field>
+                                    
+                </Fields>
+                
+                
+                <Fields>
                         <Field ColumnSize="ColumnSize.Is6">
                             <FieldLabel TextColor="TextColor.Black50">Latitud</FieldLabel>
                             <NumericEdit TValue="double" @bind-Value="_editRow.Latitud"/>

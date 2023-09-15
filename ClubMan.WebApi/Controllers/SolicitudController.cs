@@ -1,3 +1,4 @@
+using System.Runtime.Intrinsics.X86;
 using ClubMan.Shared.Events;
 using ClubMan.Shared.Model;
 using ClubMan.WebApi.Model;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClubMan.Api.Controllers;
+namespace ClubMan.WebApi.Controllers;
 
 [ApiController]
 //[Authorize(Roles = "User")]
@@ -34,6 +35,12 @@ public class SolicitudController : TenantController
     public async Task<Solicitud> GetById(long solicitudId)
     {
         return await _db.FindAsync<Solicitud>(solicitudId);
+    }
+    
+    [HttpGet("beneficiario/{beneficiarioId}", Name = "GetBeneficiarioSolicitudes")]
+    public async Task<IReadOnlyList<Solicitud>> GetByBeneficiario(string beneficiarioId)
+    {
+        return await _db.Solicitudes.Where(x => x.NumeroIdentidad == beneficiarioId && ( x.EstatusSolicitud == EstatusSolicitud.Aprobado || x.EstatusSolicitud == EstatusSolicitud.Rechazado ) ).ToListAsync();
     }
     
     [HttpGet("all", Name = "GetAllSolicitudes")]
@@ -90,6 +97,52 @@ public class SolicitudController : TenantController
         if (entry.State == EntityState.Detached)
         {
             entry.State = EntityState.Modified;
+            await _db.SaveChangesAsync();
+            // -- Embarcaciones
+            await _db.Database.ExecuteSqlRawAsync($"DELETE Solcitud_Embarcaciones WHERE SolicitudId = {solicitud.Id}");
+            foreach (var rec in solicitud.Embarcaciones)
+            {
+                var embarcacionEntry = entry.Collection(s => s.Embarcaciones).FindEntry(rec);
+                if (embarcacionEntry != null)
+                {
+                    embarcacionEntry.State = EntityState.Added;
+                }
+            }
+            await _db.SaveChangesAsync();
+            // -- Secundadores
+            await _db.Database.ExecuteSqlRawAsync($"DELETE SocioSecundador WHERE SolicitudId = {solicitud.Id}");
+            foreach (var rec in solicitud.SociosSecundadores)
+            {
+                var embarcacionEntry = entry.Collection(s => s.SociosSecundadores).FindEntry(rec);
+                if (embarcacionEntry != null)
+                {
+                    embarcacionEntry.State = EntityState.Added;
+                }
+            }
+            // -- Memebresias
+            await _db.Database.ExecuteSqlRawAsync($"DELETE MembresiaAlterna WHERE SolicitudId = {solicitud.Id}");
+            foreach (var rec in solicitud.MembresiasAlternas)
+            {
+                var embarcacionEntry = entry.Collection(s => s.MembresiasAlternas).FindEntry(rec);
+                if (embarcacionEntry != null)
+                {
+                    embarcacionEntry.State = EntityState.Added;
+                }
+            }
+            await _db.SaveChangesAsync();
+            // -- Dependientes
+            await _db.Database.ExecuteSqlRawAsync($"DELETE Dependiente WHERE SolicitudId = {solicitud.Id}");
+            foreach (var rec in solicitud.Dependientes)
+            {
+                _db.Add(rec);
+            }
+            await _db.SaveChangesAsync();
+            // -- Referencias
+            await _db.Database.ExecuteSqlRawAsync($"DELETE ReferenciaBancaria WHERE SolicitudId = {solicitud.Id}");
+            foreach (var rec in solicitud.ReferenciasBancarias)
+            {
+                _db.Add(rec);
+            }
             await _db.SaveChangesAsync();
         }
         return Ok();

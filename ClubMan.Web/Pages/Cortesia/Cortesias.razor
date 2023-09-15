@@ -1,0 +1,120 @@
+@page "/cortesias"
+@inject INotificationService NotificationService
+@inject IApiService ApiService
+
+<ListContent @ref="_dataGrid" TItem="Cortesia" Title="Cortesias" IconName="IconName.Gift" OnRowClicked="DoRowClicked" OnAddButtonClicked="DoShowAdd"  LoadDataAsync="() => ApiService.GetCortesias(AppState.ClubKey)">
+    <Columns>
+        <GridColumn Field="NumeroCarnet" Width="120px" HeaderText="Carnet"/>
+        <GridColumn Field="FechaMembresia" Width="120px" HeaderText="Desde" Format="dd-MMM-yyyy"></GridColumn>
+        <GridColumn Field="Nombre" HeaderText="Nombre"/>
+        <GridColumn Field="Celular" Width="120px"></GridColumn>
+        <GridColumn Field="TipoSocio" Width="120px" HeaderText="Tipo"></GridColumn>
+        <GridColumn Field="EstatusMembresia" Width="120px" HeaderText="Estatus"></GridColumn>
+    </Columns>
+</ListContent>
+
+<Modal @ref="editDialog" Width="Width.Max100" Closed="async () => await editValidator.ClearAll()">
+    <ModalContent Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>@(isCreating ? "Nueva Cortesia" : "Editando Cortesia")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="editValidator" Mode="ValidationMode.Manual" Model="_editRow" >
+                <PerfilCortesiaDatos Cortesia="_editRow" IsReadOnly="false"/>
+            </Validations>
+        </ModalBody>
+        <ModalFooter >
+            @if (!isCreating)
+            {
+                <Button Float="Float.Start" Outline="true" TextColor="TextColor.Danger" Loading="@_isBusy" Clicked="@DoDelete">Borrar Registro</Button>
+            }
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveEdit">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    
+    ListContent<Cortesia> _dataGrid;
+    
+    private Modal editDialog;
+    private bool isCreating = false;
+    private bool _isBusy = false;
+    private Validations editValidator;    
+    private Cortesia _editRow = new();
+    
+    [CascadingParameter]
+    private AppState AppState { get; set; }
+    
+    private void DoRowClicked(Cortesia obj)
+    {
+        isCreating = false;
+        _editRow = obj with {};
+        editDialog.Show();
+    }
+    
+    private void DoShowAdd()
+    {
+        isCreating = true;
+        _editRow = new Cortesia()
+        {
+            FechaInicio = DateTime.Today,
+            FechaExpiracion = DateTime.Today.AddDays(30)
+                
+        };
+        editDialog.Show();
+    }
+    
+    private async Task DoSaveEdit()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (!await editValidator.ValidateAll()) return;
+            _isBusy = true;
+            await ApiService.UpsertCortesia(AppState.ClubKey, _editRow, isCreating);
+            await editDialog.Hide();
+            _dataGrid.ReloadData();
+            if (isCreating)
+            {
+                await NotificationService.Success("Registro creado exitosamente");
+            }
+            else
+            {
+                await NotificationService.Success("Registro modificado exitosamente");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task DoDelete()
+    {
+        if (_isBusy) return;
+        try
+        {
+            _isBusy = true;
+            await ApiService.RemoveCortesia(AppState.ClubKey, _editRow.Id);
+            await editDialog.Hide();
+            await NotificationService.Success("Registro borrado exitosamente");
+            _dataGrid.ReloadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

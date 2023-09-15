@@ -57,8 +57,11 @@ public interface IApiService
     Task<List<Solicitud>> GetAllSolicitudes(string apiKey);
     Task<List<Solicitud>> GetSolicitudes(string apiKey);
     Task<Solicitud> GetSolicitud(string apiKey, long solicitudId);
+    Task<List<Solicitud>> GetSolicitudesPrevias(string apiKey, string beneficiaio);
     Task<Solicitud> SubmitSolicitud(AppState appState, long solicitudId);
-    Task UpsertSolicitud(string apiKey, Solicitud solicitud);
+    Task<long> CreateSolicitud(string apiKey);
+    Task InsertSolicitud(string apiKey, Solicitud solicitud);
+    Task UpdateSolicitud(string apiKey, Solicitud solicitud);
     Task<Solicitud> RejectReview(AppState appState, long solicitudId, Revision review);
     Task<Solicitud> ApproveReview(AppState appState, long solicitudId, Revision review);
     Task<Solicitud> PostponeReview(AppState appState, long solicitudId, Revision review);
@@ -72,6 +75,7 @@ public interface IApiService
     Task<List<Socio>> GetSocios(string apiKey);
     Task<Socio> GetSocio(string apiKey, long socioId);
     Task<Socio> UpdateSocioGenerales(string apiKey, Socio socio);
+    Task<Socio> UpdateSocioMembresia(string apiKey, Socio socio, TipoSocio nuevoTipoSocio, string nuevoCarnet);
     Task<Socio> UpsertSocioAdicional(AppState appState, long socioId, AdicionalSocio adicionalSocio);
     Task<Socio> ReActivateSocioAdicional(AppState appState, long socioId, AdicionalSocio adicionalSocio);
     Task<Socio> DeActivateSocioAdicional(AppState appState, long socioId, AdicionalSocio adicionalSocio);
@@ -106,6 +110,12 @@ public interface IApiService
 
     #endregion
 
+    #region Cortesias
+    Task<List<Cortesia>> GetCortesias(string apiKey);
+    Task UpsertCortesia(string apiKey, Cortesia cortesia, bool isNew);
+    Task RemoveCortesia(string apiKey,  long cortesiaId);
+    #endregion
+
     #region Invitaciones
 
     Task<List<InvitacionDeSocio>> GetInvitacionesSocio(string apiKey, long socioId);
@@ -118,5 +128,5 @@ public interface IApiService
     Task<VisitasSocio> GetVisitasDeSocio(string apiKey, long socioId);
 
     #endregion
-    
+
 }

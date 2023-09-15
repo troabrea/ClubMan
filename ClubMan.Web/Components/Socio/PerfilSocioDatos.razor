@@ -12,6 +12,7 @@
                 <RadioGroup Disabled="@IsReadOnly" TValue="EstadoCivil" @bind-CheckedValue="Socio.EstadoCivil" Inline="true">
                     <Radio Disabled="@IsReadOnly" ReadOnly="@IsReadOnly" Value="@(EstadoCivil.Casado)">Casado</Radio>
                     <Radio Disabled="@IsReadOnly" Value="@(EstadoCivil.Soltero)">Soltero</Radio>
+                    <Radio Disabled="@IsReadOnly" Value="@(EstadoCivil.Viudo)">Viudo</Radio>
                 </RadioGroup>
             </FieldBody>
         </Field>
@@ -19,9 +20,9 @@
         <Field ColumnSize="ColumnSize.Is3">
             <FieldLabel >Sexo</FieldLabel>
             <FieldBody>
-                <RadioGroup Disabled="true" TValue="Sexo" @bind-CheckedValue="Socio.Sexo" Inline="true">
-                    <Radio Disabled="true" ReadOnly="true" Value="@(Sexo.Masculino)">M</Radio>
-                    <Radio Disabled="true" Value="@(Sexo.Femenino)">F</Radio>
+                <RadioGroup Disabled="@IsReadOnly" TValue="Sexo" @bind-CheckedValue="Socio.Sexo" Inline="true">
+                    <Radio Disabled="@IsReadOnly" Value="@(Sexo.Masculino)">M</Radio>
+                    <Radio Disabled="@IsReadOnly" Value="@(Sexo.Femenino)">F</Radio>
                 </RadioGroup>
             </FieldBody>
         </Field>
@@ -31,22 +32,28 @@
         </Field>
     </Fields>
     <Fields Margin="Margin.Is1.FromTop">
-        <Field Horizontal ColumnSize="ColumnSize.Is4">
+        <Field  ColumnSize="ColumnSize.Is3">
+            <FieldLabel ColumnSize="ColumnSize.Is4">Socio Desde</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is8"><DatePicker ReadOnly="@IsReadOnly" DisplayFormat="dd-MMM-yyyy" @bind-Date="Socio.FechaMembresia"/></FieldBody>
+        </Field>
+        
+        <Field  ColumnSize="ColumnSize.Is3">
             <FieldLabel ColumnSize="ColumnSize.Is4">Nacimiento</FieldLabel>
-            <FieldBody ColumnSize="ColumnSize.Is8"><DatePicker ReadOnly="true" DisplayFormat="dd-MMM-yyyy" @bind-Date="Socio.FechaNacimiento"/></FieldBody>
+            <FieldBody ColumnSize="ColumnSize.Is8"><DatePicker ReadOnly="@IsReadOnly" DisplayFormat="dd-MMM-yyyy" @bind-Date="Socio.FechaNacimiento"/></FieldBody>
         </Field>
 
-        <Field Horizontal ColumnSize="ColumnSize.Is4">
+        <Field  ColumnSize="ColumnSize.Is3">
             <FieldLabel ColumnSize="ColumnSize.Is4">Edad</FieldLabel>
             <FieldBody ColumnSize="ColumnSize.Is8"><NumericEdit ReadOnly="true" Value="Socio.Edad"/></FieldBody>
         </Field>
 
-        <Field Horizontal ColumnSize="ColumnSize.Is4">
+        <Field  ColumnSize="ColumnSize.Is3">
             <FieldLabel ColumnSize="ColumnSize.Is4">Nacionalidad</FieldLabel>
             <FieldBody ColumnSize="ColumnSize.Is8"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Nacionalidad"/></FieldBody>
         </Field>
 
     </Fields>
+    <Divider DividerType="DividerType.TextContent" Text="Dirección"/>
     <Field Horizontal ColumnSize="ColumnSize.Is12">
         <FieldLabel ColumnSize="ColumnSize.Is1">Dirección</FieldLabel>
         <FieldBody ColumnSize="ColumnSize.Is11"><TextEdit ReadOnly="@IsReadOnly" @bind-Text="Socio.Direccion"/></FieldBody>

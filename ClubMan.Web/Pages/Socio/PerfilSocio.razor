@@ -29,6 +29,9 @@
                                     <BarItem>
                                         <Button Clicked="ShowEditDialog">Editar Generales</Button>
                                     </BarItem>
+                                    <BarItem>
+                                        <Button Clicked="ShowMembresiaDialog">Cambiar Membresia</Button>
+                                    </BarItem>
                                     @if (_socio.SolicitudId > 0)
                                     {
                                         <BarItem>
@@ -148,13 +151,52 @@
     
 </Modal>
 
+<Modal @ref="_membresiaDialog">
+    <ModalContent Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>@("Cambio Membresía de Socio")</ModalTitle>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalBody>
+            <Fields Margin="Margin.Is2.FromTop">
+                <Field ColumnSize="ColumnSize.Is8">
+                    <FieldLabel >Nuevo Tipo Socio</FieldLabel>
+                    <FieldBody>
+                        <RadioGroup Disabled="false" TValue="TipoSocio" @bind-CheckedValue="nuevoTipoSocio" Inline="true">
+                            <Radio Disabled="@(_editRow.TipoSocio == TipoSocio.Fundadores)" ReadOnly="false" Value="@(TipoSocio.Fundadores)">Fundador</Radio>
+                            <Radio Disabled="@(_editRow.TipoSocio == TipoSocio.Propietario)" ReadOnly="false" Value="@(TipoSocio.Propietario)">Propietario</Radio>
+                            <Radio Disabled="@(_editRow.TipoSocio == TipoSocio.Numeral)" Value="@(TipoSocio.Numeral)">Numeral</Radio>
+                            <Radio Disabled="@(_editRow.TipoSocio == TipoSocio.Corporativo)" Value="@(TipoSocio.Corporativo)">Corporativo</Radio>
+                            <Radio Disabled="@(_editRow.TipoSocio == TipoSocio.Diplomatico)" Value="@(TipoSocio.Diplomatico)">Diplomático</Radio>
+                            <Radio Disabled="@(_editRow.TipoSocio == TipoSocio.NoResidente)" Value="@(TipoSocio.NoResidente)">No-Residente</Radio>
+                            <Radio Disabled="@(_editRow.TipoSocio == TipoSocio.Especial)" Value="@(TipoSocio.Especial)">Especial</Radio>
+                        </RadioGroup>
+                    </FieldBody>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is2">
+                    <FieldLabel>Nuevo Carnet</FieldLabel>
+                    <FieldBody><TextEdit ReadOnly="false" @bind-Value="nuevoCarnet"/></FieldBody>
+                    <FieldHelp>Carnet Anterior: @_editRow.NumeroCarnet</FieldHelp>
+                </Field>
+            </Fields>
+        </ModalBody>
+        <ModalFooter>
+            <Button Float="Float.End" Color="Color.Primary" Loading="@_isBusy" Clicked="@DoSaveMembresia">Guardar Cambios</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
 @code {
 
     bool _isBusy;
     Modal _editDialog;
+    Modal _membresiaDialog;
     Modal _invitacionesDialog;
     Modal _cxcDialog;
     Socio _editRow = new();
+
+    TipoSocio nuevoTipoSocio;
+    String nuevoCarnet;
     
     string _selectedTab = "socio";
     string _title = "Perfil de Socio";
@@ -178,7 +220,15 @@
         _editRow = _socio with{};
         _editDialog.Show();
     }
-
+    
+    private void ShowMembresiaDialog()
+    {
+        _editRow = _socio with{};
+        nuevoCarnet = string.Empty;
+        nuevoTipoSocio = _editRow.TipoSocio;
+        _membresiaDialog.Show();
+    }
+    
     private async Task DoSaveEdit()
     {
         if (_isBusy) return;
@@ -199,7 +249,36 @@
             StateHasChanged();
         }
     }
-    
+    private async Task DoSaveMembresia()
+    {
+        if (_isBusy) return;
+        try
+        {
+            if (nuevoTipoSocio == _editRow.TipoSocio)
+            {
+                await NotificationService.Warning("No cambió el tipo de membresía.");
+                return;
+            }
+            if (String.IsNullOrEmpty(nuevoCarnet))
+            {
+                await NotificationService.Warning("Debe especificar un número nuevo de carnet.");
+                return;
+            }
+            _socio = await ApiService.UpdateSocioMembresia(AppState.ClubKey, _editRow, nuevoTipoSocio, nuevoCarnet);
+            await _membresiaDialog.Hide();
+            await NotificationService.Success("Registro actualizado exitosamente");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            await NotificationService.Error("Ha ocurrudo un error en el proceso, favor reintentar");
+        }
+        finally
+        {
+            _isBusy = false;
+            StateHasChanged();
+        }
+    }
     private async Task DoLoadSocioAsync()
     {
         if(SocioId > 0)

@@ -20,6 +20,7 @@ public class ClubManContext : DbContext
     public DbSet<Noticia> Noticias => Set<Noticia>();
     public DbSet<Pregunta> Preguntas => Set<Pregunta>();
     public DbSet<Servicio> Servicios => Set<Servicio>();
+    public DbSet<Cortesia> Cortesias => Set<Cortesia>();
     public DbSet<Carnet> Carnets => Set<Carnet>();
     public DbSet<Socio> Socios => Set<Socio>();
     public DbSet<Solicitud> Solicitudes => Set<Solicitud>();
@@ -39,6 +40,7 @@ public class ClubManContext : DbContext
         ConfigureAdminModel(modelBuilder);
         ConfigureContentModel(modelBuilder);
 
+        ConfigureCortesiaModel(modelBuilder);
         ConfigureSolictudModel(modelBuilder);
         ConfigureSocioModel(modelBuilder);
 
@@ -270,11 +272,22 @@ public class ClubManContext : DbContext
     {
         modelBuilder.Entity<Socio>(b =>
         {
+            b.HasIndex(x => x.SocioId).IsUnique();
             b.OwnsMany(x => x.Dependientes);
             b.OwnsMany(x => x.Embarcaciones);
             b.OwnsMany(x => x.Adicionales);
             b.OwnsMany(x => x.Huespededes);
             b.ToTable("Socio");
+        });
+        
+    }
+    
+    private void ConfigureCortesiaModel(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Cortesia>(b =>
+        {
+            b.HasIndex(x => x.Id).IsUnique();
+            b.ToTable("Cortesia");
         });
         
     }

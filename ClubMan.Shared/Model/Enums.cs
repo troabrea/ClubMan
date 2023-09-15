@@ -2,17 +2,20 @@ namespace ClubMan.Shared.Model;
 
 public enum TipoSocio
 {
-    Propietario,
-    Numeral,
-    Corporativo,
-    Diplomatico,
-    Especial
+    Fundadores = 1,
+    Propietario = 2,
+    Numeral = 3,
+    Corporativo = 4,
+    Diplomatico = 5,
+    NoResidente = 6,
+    Especial = 7,
 }
 
 public enum EstadoCivil
 {
     Soltero,
-    Casado
+    Casado,
+    Viudo
 }
 
 public enum Sexo
@@ -55,7 +58,6 @@ public enum EstatusRevision
     Rechazado,
     Pospuesto
 }
-
 public enum EstatusMembresia
 {
     Activa,

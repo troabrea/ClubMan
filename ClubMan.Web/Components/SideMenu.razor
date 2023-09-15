@@ -5,11 +5,11 @@
         <BarBrand>
             <BarItem>
                 <BarLink >
-                    @if (AppState.ClubKey != "")
-                    {
-                    @* <BarIcon IconName="logoIcon"/> *@
-                        <Image Style="height: 32px;width: 32px" Source="@AppState.LogoUrl"/>
-                    }
+                    @* @if (AppState.ClubKey != "") *@
+                    @* { *@
+                    @* $1$ <BarIcon IconName="logoIcon"/> #1# *@
+                    @*     <Image Style="height: 32px;width: 32px" Source="@AppState.LogoUrl"/> *@
+                    @* } *@
                     @AppState.ClubName
                 </BarLink>
             </BarItem>
@@ -43,6 +43,12 @@
                     <BarLink To="Solicitudes">
                         <BarIcon IconName="IconName.FileAlt"/>
                         Solicitudes
+                    </BarLink>
+                </BarItem>
+                <BarItem>
+                    <BarLink To="Cortesias">
+                        <BarIcon IconName="IconName.Gift"/>
+                        Cortesías
                     </BarLink>
                 </BarItem>
                 <BarItem>

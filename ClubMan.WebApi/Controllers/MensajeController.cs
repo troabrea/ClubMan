@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClubMan.Api.Controllers;
+namespace ClubMan.WebApi.Controllers;
 
 [ApiController]
-[Authorize(Roles = "User")]
+// [Authorize(Roles = "User")]
+[AllowAnonymous]
 [Route("api/[controller]")]
 public class MensajeController : TenantController
 {
